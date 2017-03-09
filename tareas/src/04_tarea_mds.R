@@ -77,6 +77,7 @@ data("senado_votaciones")
 names(senado_votaciones)
 dim(senado_votaciones)
 
+
 aux.senadores <- read.csv("tareas/data/senadores-partidos.csv", 
                           col.names = c("senador", "partido", "estado")) %>% 
   mutate(partido = str_trim(partido))
@@ -94,7 +95,7 @@ head(tab.senadores)
 
 # 1. funciones
 NAReplace <- function(col){
-  col2 <- ifelse(is.na(col), 99, col)
+  col2 <- ifelse(is.na(col), 900, col)
   return(col2)
 }
 
@@ -167,10 +168,10 @@ tab.gg <- aprox %>%
   left_join(tab.senadores, by = 'senador.id')
 
 
-ggplot(tab.gg, aes(x = V1, y = V2, color = partido)) + 
+gg <- ggplot(tab.gg, aes(x = V1, y = V2, color = partido)) + 
   geom_point(size = 3) + 
-  scale_color_manual(values = c("gray", "blue", "yellow", "red", "black", "green"))
-
+  scale_color_manual(values = c("blue", "yellow", "red", "black", "green", "gray"))
+ggplotly(gg)
 
 
 # CMDSCALE
@@ -179,6 +180,25 @@ x <- fit$points[, 1]
 y <- fit$points[, 2]
 plot(x, y, pch = 19)
 
+
+
+ggplot(tab.gg, aes(x = V1, y = V2, 
+                   color = partido,label = tab.gg$senador)) + 
+  geom_point(size = 3) + 
+  scale_color_manual(values = c("blue", "gray", "red", "orange", "green", "black"))+
+  geom_text(check_overlap = T)
+
+ggplot(tab.gg[tab.gg$V1<0,], aes(x = V1, y = V2,
+                                 color = partido,label = tab.gg[tab.gg$V1<0,]$senador)) + 
+  geom_point(size = 3) + 
+  scale_color_manual(values = c("blue", "gray", "red", "orange", "green", "black"))+
+  geom_text(check_overlap = T)
+
+ggplot(tab.gg[tab.gg$V2>175,], aes(x = V1, y = V2, 
+                                   color = partido,label = tab.gg[tab.gg$V2>175,]$senador)) + 
+  geom_point(size = 3) + 
+  scale_color_manual(values = c("blue", "gray", "red", "orange", "green", "black"))+
+  geom_text(check_overlap = F)
 
 
 
@@ -231,3 +251,6 @@ plot(x, y, pch = 19)
 # plot(x, y, pch = 19)
 # 
 # 
+
+
+

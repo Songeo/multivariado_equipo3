@@ -1,75 +1,98 @@
 ---
-title: "MDS-equipo3"
-output: html_document
+title: "Tarea 4 - Muldimensional Scaling"
+date: "Mariana Godina, Lorena Malpica, Sonia Mendizábal, Victor Montoya "
+author: "Equipo 3"
+output: pdf_document
 ---
 
-```{r}
-knitr::opts_chunk$set(echo = TRUE)
+
+---
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.width = 6, fig.height = 4, fig.align = "center")
 library(tidyverse)
 library(stringr)
 library(lubridate)
 library(MVA)
+library(metodosMultivariados2017)
 
 theme_set(theme_minimal())
-```
-Primero hicimos unas pruebas tomando datos de distancias entre ciudades.
 
-AUSTRALIA
+data("senado_votaciones")
+#dim(senado_votaciones)
+# setwd("/home/lmalpica/Desktop/itam-semestre2/mauricio")
+aux.senadores <- read.csv("../data/senadores-partidos.csv", header = FALSE,
+                          col.names = c("senador", "partido", "estado")) %>% 
+  mutate(partido = str_trim(partido))
 
-```{r}
-dist.au <- read.csv("http://rosetta.reltech.org/TC/v15/Mapping/data/dist-Aus.csv")
-dist.au
-rownames(dist.au) <- dist.au[, 1]
-
-```
-
-La función cmdscale hace todo el proceso de multidimensional scaling a partir de una matriz. Los argumentos que recibe esta función son la matriz de distancias d, el número de dimensiones k en las que se van a representar los datos y eig que si es TRUE indica que la función regresa los eigenvalues (el default es FALSE). Utilizamos esta función para tener una idea de que resultado esperar al implementar el MDS paso por paso. 
-
-```{r}
-fit <- cmdscale(dist.au[, -1], eig = TRUE, k = 2)
-x <- fit$points[, 1]
-y <- fit$points[, 2]
-plot(x, y, pch = 19, xlim = range(x) + c(0, 600))
-city.names <- c("Adelaide", "Alice Springs", "Brisbane", "Darwin", "Hobart", 
-                "Melbourne", "Perth", "Sydney")
-text(x, y, pos = 4, labels = city.names)
-
+tab.senadores <- data.frame(
+  senador = colnames(senado_votaciones)[-1:-3]
+  ) %>% 
+  left_join(aux.senadores, by = "senador") %>% 
+  mutate(senador.id = row.names(.), 
+         partido = str_replace_all(partido, "ṔAN", "PAN"))
 ```
 
-El siguiente ejemplo implementa el mismo método tomando ahora datos de distancias entre distintas ciudades de Europa. 
 
 
+En esta tarea se presenta cada paso para obtener Multidimensional Scaling 
+usando datos de votaciones de propuestas en el senado. Para 
+los valores faltantes de la base se creó la siguiente función que 
+sustituye los valores faltantes por 99.
 ```{r}
-euromat <-  as.matrix(eurodist)
-euromat[1:5,1:5]
-
-# CMDSCALE
-fit <- cmdscale(euromat, eig = TRUE, k = 2)
-x <- fit$points[, 1]
-y <- fit$points[, 2]
-
-plot(x, y, pch = 19, xlim = range(x) + c(0, 600))
-text(x, y, pos = 4, labels = labels(eurodist))
+NAReplace <- function(col){
+  col2 <- ifelse(is.na(col), 99, col)
+  return(col2)
+}
 ```
 
-Ahora ocupando los mismos datos, se implementa el MDS paso por paso. 
+A continuación presentamos paso por paso el análisis:
 
-Empezamos con la matriz de distancias que teniamos en el ejemplo anterior. Se genera la matriz centradora kn.
+
+
+#### 1. Se calcula la matriz de distancias euclideanas. 
+
+
+
+
 ```{r}
-dim(euromat)
-d <- euromat
+d <- senado_votaciones %>% 
+  dplyr::select(-1:-3) %>% 
+  t() %>%
+  as_tibble() %>% 
+  mutate_all(funs(NAReplace(.))) %>% 
+  dist(method = "euclidean") %>% 
+  as.matrix()
 n <- nrow(d)
+```
+
+#### 2. Se genera la matriz centradora `kn`.
+
+```{r}
 kn <- diag(1, n) - (1/n)*rep(1, n)*rep(1, n)
 dim(d)
 dim(kn)
 ```
-Centramos la matriz de distancias al cuadrado, por filas y por columnas y obtenemos B.
+
+
+
+#### 2. Se centra la matriz de distancias al cuadrado, por filas y por columnas. Así obtenemos la matriz `b`.
+
 $$B=\frac{-1}{2}k_nD^2k_n$$
+
+
 ```{r}
 b <- (-1/2) *((kn %*% d^2) %*% kn)
 ```
+
+
+#### 3. Se realiza la descomposición espectral 
+
 Sabemos que:
 $$B=XX^T$$
+
 Por lo tanto teniendo B podemos obtener X usando el método de descomposición espectral. Primero se obtienen los eigenvalores y eigenvectores de B tomando k eigenvectores y eigenvalores. P es la matriz de eigenvectores y C la matriz de eigenvalores.
 
 $$P=[V_1, V_2, |...| , V_k]  \hspace{2cm} \lambda_1\geq\lambda_2\geq...\geq\lambda_k  
@@ -79,12 +102,17 @@ C=\begin{bmatrix}
    \dots    & \dots & \dots \\
     0        & \dots & \lambda_n
 \end{bmatrix}$$
+
 ```{r}
 eigenval <- eigen(b)
 c <-  diag(eigenval$values)
 p <-  eigenval$vectors
-
+eigenval$values
 ```
+
+
+#### 4. Aproximación de componentes. 
+
 
 De acuerdo a la demostración vista en clase sabemos que:
 
@@ -96,150 +124,131 @@ $$X= PC^{1/2}= [V_1, V_2, |...| , V_n] \begin{bmatrix}
 Suponemos que:
 $$\lambda_1\geq\lambda_2\geq...\geq\lambda_n$$
 Entonces:
-$$\hat{X}==[\sqrt\lambda_1V_1, \sqrt\lambda_2V_2,|...|, \sqrt\lambda_kV_k ] $$
+$$\hat{X}=[\sqrt\lambda_1V_1, \sqrt\lambda_2V_2,|...|, \sqrt\lambda_kV_k ] $$
 es una aproximación de grado k de X si  $$k\leq n$$
+
+
 ```{r}
-fit$eig
-eigenval$values
 aprox <- p %*% sqrt( abs(c) ) %>% 
   as_tibble()
-```
-Graficamos nuestra aproximación de X y esperamos obtener una visualización parecida que con el método cmdscale. 
-
-```{r}
-ggplot(aprox, aes(x = V1, y = -1*V2)) + 
-  geom_point() + 
-  geom_text(label = rownames(d))
-```
-Ahora aplicaremos los mismos pasos al set de datos de senadores en México. 
-Primero importamos y limpiamos los datos.
-
-```{r}
-library(metodosMultivariados2017)
-data("senado_votaciones")
-names(senado_votaciones)
-dim(senado_votaciones)
-setwd("/home/lmalpica/Desktop/itam-semestre2/mauricio")
-aux.senadores <- read.csv("senadores-partidos.csv", header = FALSE,
-                          col.names = c("senador", "partido", "estado")) %>% 
-  mutate(partido = str_trim(partido))
-sort(colnames(senado_votaciones)[-1:-3])
-sort(as.character(str_trim(aux.senadores$senador)))
-
-tab.senadores <- data.frame(
-  senador = colnames(senado_votaciones)[-1:-3]
-  ) %>% 
-  left_join(aux.senadores, by = "senador") %>% 
-  mutate(senador.id = row.names(.), 
-         partido = str_replace_all(partido, "ṔAN", "PAN"))
-head(tab.senadores)
-```
-Función que elimina los NA (los NA se deben a las ausencias).
-```{r}
-NAReplace <- function(col){
-  col2 <- ifelse(is.na(col), 99, col)
-  return(col2)
-}
-```
-MDS.
-
-Primero obtenemos la matriz de distancias entre iniciativas, ésta está dada por la similitud entre los votos que han emitido los senadores para las distintas iniciativas.
-```{r}
-# PROPUESTA
-d <- senado_votaciones %>% 
-  dplyr::select(-1:-3) %>% 
-  # t() %>% 
-  as_tibble() %>% 
-  mutate_all(funs(NAReplace(.))) %>% 
-  dist(method = "euclidean") %>% 
-  as.matrix()
-```
-Ya que obtuvimos la matriz de distancias repetimos los pasos ilustrados anteriormente y obtenemos la aproximación de X. 
-```{r}
-n <- nrow(d)
-kn <- diag(1, n) - (1/n)*rep(1, n)*rep(1, n)
-
-dim(d)
-dim(kn)
-b <- (-1/2) *((kn %*% d^2) %*% kn)
-
-eigenval <- eigen(b)
-c <-  diag(eigenval$values)
-p <-  eigenval$vectors
-eigenval$values
-
-aprox <- p %*% sqrt( abs(c) ) %>% 
-  as_tibble()
-```
-Con el resultado obtenido graficamos las distancias entre iniciativas y lo visualizamos de acuerdo a las fechas en las que fueron votadas.
-
-```{r}
-fechas.vec <- factor(month(senado_votaciones$FECHA)) 
-ggplot(aprox, aes(x = V1, y = V2)) + 
-  geom_point(aes(color = fechas.vec) )  + 
-  theme(legend.position = 'bottom')
-# geom_text(label = cnames(senado_votaciones)[-1:-3], check_overlap = T)
+aprox[1:5, 1:10]
 ```
 
-Hacemos el MDS con la función de R y comparamos los resultados obtenidos. 
-```{r}
-fit <- cmdscale(d, eig = TRUE, k = 2)
-x <- fit$points[, 1]
-y <- fit$points[, 2]
-plot(x, y, pch = 19)
-```
 
-Se puede ver que las gráficas son iguales. El único cluster visible es un grupo de aprox. 8 propuestas hechas en el mes de diciembre el resto de los datos se encuentran bastante dispersos. 
+#### 5. Gráfica de componentes. 
 
-Ahora aplicaremos el mismo análisis pero tomando como objetos a los senadores en vez de las iniciativas, la distancia entre ellos depende de que tan similares sean sus votaciones para las distintas iniciativas.
-Primero obtenemos los datos y obtenemos la matriz de distancias.
-```{r}
-d <- senado_votaciones %>% 
-  dplyr::select(-1:-3) %>% 
-  t() %>%
-  as_tibble() %>% 
-  mutate_all(funs(NAReplace(.))) %>% 
-  dist(method = "euclidean") %>% 
-  as.matrix()
+Graficamos dos componentes de la aproximación de X. 
 
-```
-Hacemos el MDS. 
-```{r}
-n <- nrow(d)
-kn <- diag(1, n) - (1/n)*rep(1, n)*rep(1, n)
-
-dim(d)
-dim(kn)
-b <- (-1/2) *((kn %*% d^2) %*% kn)
-
-eigenval <- eigen(b)
-c <-  diag(eigenval$values)
-p <-  eigenval$vectors
-eigenval$values
-
-aprox <- p %*% sqrt( abs(c) ) 
-```
-Hacemos una gráfica del resultado obtenido y visualizamos a los senadores por partido al que pertenecen.
 ```{r}
 tab.gg <- aprox %>% 
   as_tibble() %>% 
   mutate(senador.id = row.names(.)) %>% 
   left_join(tab.senadores, by = 'senador.id')
 
-
 ggplot(tab.gg, aes(x = V1, y = V2, color = partido)) + 
   geom_point(size = 3) + 
   scale_color_manual(values = c("gray", "blue", "yellow", "red", "black", "green"))
 ```
 
-Repetimos el análisis con la función cmdscale. 
+
+Usando el MDS con la función `cmdscale` de R y se obtienen resultados
+iguales. 
 ```{r}
-# CMDSCALE
 fit <- cmdscale(d, eig = TRUE, k = 2)
 x <- fit$points[, 1]
 y <- fit$points[, 2]
 plot(x, y, pch = 19)
 ```
 
+No se observa una agrupación clara entre los senadores de acuerdo al partido al que pertenecen. A continuación se presenta la gráfica incluyendo nombres 
+de senadores. 
 
-Como podemos ver no hay una agrupación clara entre los senadores de acuerdo al partido al que pertenecen. Sin embargo si se puede ver un grupo bien delimitado compuesto principalmente por senadores del PAN, del PRI y del PVEM, también se puede ver que los puntos más aislados en la gráfica son en su mayoría senadores del PAN y del PRD. Sería interesante buscar por nombre a los senadores que pertenecen al grupo más delimitado y ver que relación hay entre ellos, si son figuras líderes en sus partidos o si pertenecen a estados cercanos geográficamente. 
+```{r}
+ggplot(tab.gg, aes(x = V1, y = V2, 
+                   color = partido,label = tab.gg$senador)) + 
+  geom_point(size = 3) + 
+  scale_color_manual(values = c("gray", "blue", "yellow", "red", "black", "green"))+
+  geom_text(check_overlap = T, size = 3)
+```
+
+
+Sin embargo, si se puede ver un grupo compuesto principalmente 
+por senadores del PAN y PRI. En la siguiente gráfica, se presentan 
+algunos nombres de senadores agrupación mencionada.
+
+```{r}
+ggplot(tab.gg[tab.gg$V1<0,], aes(x = V1, y = V2,
+                                 color = partido,label = tab.gg[tab.gg$V1<0,]$senador)) + 
+  geom_point(size = 3) + 
+  scale_color_manual(values = c("gray", "blue", "yellow", "red", "black", "green"))+
+  geom_text(check_overlap = T, size = 3)
+```
+
+
+Se observan algunos senadores aislados, en su mayoría senadores independientes, 
+del PAN y del PRD. 
+
+```{r}
+ggplot(tab.gg[tab.gg$V2>175,], 
+       aes(x = V1, y = V2, 
+           color = partido,label = tab.gg[tab.gg$V2>175,]$senador)) + 
+  geom_point(size = 3) + 
+  scale_color_manual(values = c("gray", "blue", "yellow", "red", "black", "green"))+
+  geom_text(check_overlap = F, size = 3)
+```
+
+
+Sería interesante buscar por nombre a los senadores que pertenecen al grupo más delimitado y ver que relación hay entre ellos, si son figuras líderes en sus partidos o si pertenecen a estados cercanos geográficamente. 
+
+
+
+#### 6. Ejemplo Adicional
+
+Como ejemplo adicional, se presenta la asociación de iniciativas propuestas
+en el senado. A continuación, se realiza el proceso del análisis 
+multidimensional scaling.
+
+```{r}
+d <- senado_votaciones %>% 
+  dplyr::select(-1:-3) %>% 
+  as_tibble() %>% 
+  mutate_all(funs(NAReplace(.))) %>% 
+  dist(method = "euclidean") %>% 
+  as.matrix()
+n <- nrow(d)
+kn <- diag(1, n) - (1/n)*rep(1, n)*rep(1, n)
+
+dim(d)
+dim(kn)
+b <- (-1/2) *((kn %*% d^2) %*% kn)
+
+eigenval <- eigen(b)
+c <-  diag(eigenval$values)
+p <-  eigenval$vectors
+aprox <- p %*% sqrt( abs(c) ) %>% 
+  as_tibble()
+aprox[1:5, 1:10]
+```
+
+Con el resultado obtenido graficamos las distancias entre iniciativas y lo visualizamos de acuerdo a las fechas en las que fueron votadas.
+
+
+```{r}
+fechas.vec <- factor(month(senado_votaciones$FECHA)) 
+ggplot(aprox, aes(x = V1, y = V2)) + 
+  geom_point(aes(color = fechas.vec), size = 2)  + 
+  theme(legend.position = 'bottom') + 
+  guides(color = guide_legend(title = "Mes de Votación"))
+```
+
+Usando el MDS con la función `cmdscale` de R y se obtienen resultados
+iguales. 
+```{r}
+fit <- cmdscale(d, eig = TRUE, k = 2)
+x <- fit$points[, 1]
+y <- fit$points[, 2]
+plot(x, y, pch = 19)
+```
+
+En este caso, se puede observar una agrupación de 
+propuestas por mes. 
