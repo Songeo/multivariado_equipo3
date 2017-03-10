@@ -1,0 +1,68 @@
+---
+title: 'SEM: Structural Equation Modeling'
+author: "Equipo 3"
+date: "March 15, 2017"
+output: html_document
+---
+
+## Ecuaciones Estructurales
+
+### Introducción 
+
+Los orígenes de los modelos de ecuaciones estructurales (SEM) se encuentran en las
+técnicas desarrollado hace 90 años por Stewal Wright (Wright 1921), que lo desarrollo
+en el campo de la genética, cuyo propósito fue el de permitir "el examen de un conjunto
+de relaciones entre una o más variables independientes, sean estas continuas o discretas" desarrollando una forma de romper las correlaciones observadas en un sistema de ecuaciones matemáticas que describían sus hipótesis respecto a unas relaciones
+causales. Estas relaciones entre las variables fueron representadas en un “path
+diagram”, conociéndose este método como “path analysis”.
+
+<br>
+
+<img src="tikz6.png" width="900px"/>
+
+<br>
+
+Los modelos de análisis factorial de confirmación son ejemplos relativamente simples de un marco más general para modelar variables latentes y se conocen como modelos de ecuación estructural o modelos de estructura de covarianza. En estos modelos, se asume nuevamente que las variables observadas son indicadores de las variables latentes subyacentes, pero ahora se incorporan las ecuaciones de regresión que enlazan las variables latentes.
+
+El objetivo de las ecuaciones estructurales es explicar las correlaciones o covarianzas de las variables observadas en términos de las relaciones de estas variables con las variables latentes subyacentes asumidas y las relaciones postuladas entre las mismas variables latentes. 
+
+### Ejemplo
+
+Veremos el estudi de Wheaton, Muthen, Alwin, and Summers (1977), que se ocupa de la estabilidad en el tiempo de actitudes como la alienación y la relación de tales actitudes con variables de fondo tales como educación y ocupación. Para ello, se recopilaron datos sobre escalas de actitud de 932 personas en dos regiones rurales de Illinois en tres puntos temporales, 1966, 1967 y 1971. Sólo vamos a considerar los datos de 1967 y 1971.
+
+Los puntajes en la escala de anomia y la escala de deficiencia se tomaron como indicadores de la supuesta variable latente, alienación. Se suponía que los años de escolaridad (educación) de un entrevistado y el índice socioeconómico de Duncan eran indicadores del nivel socioeconómico de un encuestado. Se considera que la variable latente socioeconómica afecta a la alienación en ambos puntos temporales, y la alienación en 1967 también afecta a la alienación en 1971.
+
+```{r, message=FALSE, warning=FALSE}
+library(lavaan)
+library(sem)
+#Matriz de correlación 
+corel <- lav_matrix_lower2full(c(1, .54, 1, -.35, -.29, 1, -.37, -.28, .67, 1, -.36, -.3, .56, .44, 1, -.41, -.29, .47, .52, .66, 1))
+#colnames(corel) <- row.names(corel) <- c('Educ', 'SEI', 'Anomia71', 'Powles71', #'Anomia67', 'Powles67')
+
+alienation_model <- specifyModel("modalin.txt")
+
+mode <- sem(alienation_model, corel, N = 932)
+
+summary(mode)
+```
+
+```{r, echo=TRUE}
+pathDiagram(mode)
+```
+
+#### Primer paso
+
+Se postula un modelo 
+
+#### Primer paso
+
+Se postula un modelo, posiblemente con variables latentes.
+
+#### Segundo paso 
+
+
+
+
+*biblio*
+http://www-personal.umich.edu/~gonzo/papers/sem.pdf
+http://masteres.ugr.es/moea/pages/curso201314/tfm1314/tfm-septiembre1314/memoriamasterantonio_lara_hormigo/!
