@@ -18,7 +18,7 @@ diagram”, conociéndose este método como “path analysis”.
 
 <br>
 
-<img src="tikz6.png" width="900px"/>
+<img src="../doc/tikz6.png" width="800px"/>
 
 <br>
 
@@ -36,19 +36,26 @@ Los puntajes en la escala de anomia y la escala de deficiencia se tomaron como i
 library(lavaan)
 library(sem)
 #Matriz de correlación 
-corel <- lav_matrix_lower2full(c(1, .54, 1, -.35, -.29, 1, -.37, -.28, .67, 1, -.36, -.3, .56, .44, 1, -.41, -.29, .47, .52, .66, 1))
+corel <- lav_matrix_lower2full(c(1, .54, 1, -.35, -.29, 1, -.37, -.28, .67,
+                                 1, -.36, -.3, .56, .44, 1, -.41, -.29, .47, .52, .66, 1))
 #colnames(corel) <- row.names(corel) <- c('Educ', 'SEI', 'Anomia71', 'Powles71', #'Anomia67', 'Powles67')
 
-alienation_model <- specifyModel("modalin.txt")
+alienation_model <- specifyModel("../data/modalin.txt")
 
 mode <- sem(alienation_model, corel, N = 932)
 
 summary(mode)
 ```
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, eval = FALSE}
 pathDiagram(mode)
 ```
+
+```{r, echo=F, fig.align='center'}
+knitr::include_graphics("../doc/pathdiagram.png")
+```
+
+
 
 #### Primer paso
 
