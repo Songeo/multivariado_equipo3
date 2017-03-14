@@ -2,7 +2,7 @@ library(foreign)
 data <- read.spss("http://www.methodsconsultants.com/data/intelligence.sav", to.data.frame=TRUE)
 
 names(data)
-dataCov<-cov(data)
+dataCov <- cor(data)
 
 cat(file = "tareas/doc/sem_intellect.txt",
 "humor -> simpsons, NA, 1
@@ -25,7 +25,7 @@ humor <-> humor, z1, NA")
 
 fullsem <- specifyModel("tareas/doc/sem_intellect.txt")
 
-out <- sem(fullsem,dataCov,N=100)
+out <- sem(fullsem, dataCov, N = 100)
 summary(out)
 pathDiagram(out)
 
