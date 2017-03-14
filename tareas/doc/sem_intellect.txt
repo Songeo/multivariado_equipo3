@@ -13,5 +13,6 @@ reading <-> reading, d1, NA
 writing <-> writing, d2, NA
 math <-> math, d3, NA
 analytic <-> analytic, d4, NA
+reading <-> writing, f1, NA
 intell <-> intell, NA, 1
 humor <-> humor, z1, NA

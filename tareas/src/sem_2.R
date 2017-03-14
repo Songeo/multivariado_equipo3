@@ -60,34 +60,39 @@ reading <-> reading, d1, NA
 writing <-> writing, d2, NA
 math <-> math, d3, NA
 analytic <-> analytic, d4, NA
+reading <-> writing, f1, NA
 intell <-> intell, NA, 1
 humor <-> humor, z1, NA")
 
 fullsem <- specifyModel(file = "tareas/doc/sem_intellect.txt")
-out <- sem(fullsem, data.cov, N = 100)
-summary(out)
-pathDiagram(out)
+fit.sem <- sem(fullsem, data.cov, N = 100)
+summary(fit.sem)
+pathDiagram(fit.sem)
 
 pdf("diag_sem.pdf")
-pathDiagram(out)
+pathDiagram(fit.sem)
 dev.off()
 
 # 4. librería LAVAN
 model <- "
-# latent variable definitions
-humor =~ simpsons + familyguy + amerdad
-intell =~ reading + writing + math + analytic
-# regressions
-intell ~ humor
+# latent variable definitions (is measured by)
+humor =~ l1*simpsons + l2*familyguy + l3*amerdad
+intell =~ l4*reading + l5*writing + l6*math + l7*analytic
+# regressions (regressed on)
+intell ~ g1*humor
+# correlations (correlated with)
+reading ~~ writing
 "
 
-fit <- lavaan::sem(model, data = data)
-summary(fit, fit.measures=TRUE)
-lavaan::summary(fit, standardized=TRUE)
-lavaan::coef(fit)
-semPaths(fit, "std", curvePivot = T, layout = "circle2")
-lavaan::modindices(fit)
+fit.lav <- lavaan::sem(model, data = data)
+lavaan::summary(fit.lav, standardized=TRUE)
+lavaan::coef(fit.lav)
+semPaths(fit.lav, "std", curvePivot = T, layout = "circle2")
+lavaan::modindices(fit.lav)
+lavaan::fitmeasures(fit.lav)
 
 
-
+# estimated values
+lavaan::parameterestimates(fit.lav)
+summary(fit.sem)
 

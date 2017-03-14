@@ -135,7 +135,7 @@ intell ~ humor
 "
 
 fit.lav <- lavaan::sem(model, data = data)
-summary(fit.lav, fit.measures=TRUE)
+lavaan::summary(fit.lav, standardized=TRUE)
 ```
 
 ```{r}
