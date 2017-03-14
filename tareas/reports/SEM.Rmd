@@ -1,0 +1,76 @@
+---
+title: "SEM resumen"
+output: pdf_document
+---
+### Introducción
+
+Los modelos de ecuaciones estructurales son un conjunto de métodos que buscan modelar variables latentes y vincularlas por medio de ecuaciones lineales. Lo que se busca es explicar las correlaciones o covarianzas de las variables observadas en función de las relaciones que éstas tienen con las variables latentes subyacentes. También se busca modelar las relaciones que existen entre estas mismas variables latentes. Uno de los aspectos importantes de esta metodología es el "path analysis", en el cual por medio de un grafo se representan las relaciones entre las variables observadas, las variables latentes y los parámetros del modelo. 
+
+
+### Estimación, identificación y evaluación del ajuste para modelos de ecuaciones estructurales
+
+### Estimación 
+
+Un modelo de ecuaciones estructurales contiene un conjunto de parámetros que se estiman a partir de la covarianza o matriz de correlaciones de las variables observadas. 
+
+El proceso de estimación busca encontre valores para los parámetros del modelo que minimicen una función de discrepancia. La función de discrepancia indica las diferencias entre  dos matrices, la matriz de covarianzas de las variables observadas, $S$. Así como $\Sigma(\theta)$ la matriz de covarianzas implicada por el modelo ajustado, los elementos de esta matriz son funciones de los parámetros del modelo, contenidos en el vector $\theta= (\theta_1,...,\theta_2)^T$.
+
+El método más común para estimar los parámetros en un modelo de ecuaciones estructurales es el método de máxima verosimilitud, asumiendo que los datos observados sigan una distribución normal multivariada. Al usar este método, aumentar la verosimilitud se vuelve equivalente a minimizar la función de discrepancia dada por:
+
+$$ FML(S, \Sigma(\theta))=log|\Sigma(\theta)|-log|S|+tr(S\Sigma(\theta)^-1)-q$$
+Podemos ver que al ir variando los parámetros $\theta_1,...\theta_t$ para que $\Sigma(\theta)$ se parezca más a $S$, $FML$ se vuelve más pequeña. Para minimizar la función $FML$ se necesitan algoritmos numéricos iterativos. 
+
+### Identificación 
+
+Consideremos el modelo con tres variables observadas $x$, $x'$ y $y$ y dos variables latentes, $u$ y $v$ con las relaciones entre las variables observadas y las latentes dadas por:
+
+$$
+x=u+\delta  \\
+y=v+\epsilon \\
+x'=u+\delta'
+
+$$
+Si asumimos que $\delta$, $\delta'$ y $\epsilon$ tienen valores esperados de cero, que $\delta$ y $\delta'$ no se correlacionan entre si ni con $u$, y que  $\epsilon$ no se correlaciona con $v$, la matriz de covarianzas de las variables observadas se puede expresar en términos de parámetros que representen las varianzas y covarianzas de los residuales y de las variables latentes:
+$$
+\Sigma(\theta)=
+\begin{bmatrix}
+    \theta_1+\theta_2\\
+   \theta_3    & \theta_4+\theta_5\\
+    \theta_3 & \theta_4 & \theta_4+\theta_6
+\end{bmatrix}
+$$
+donde $\theta^T=(\theta_1, \theta_2, \theta_3, \theta_4,\theta_5,\theta_6)$ y $\theta_1=Var(v)$, $\theta_2=Var(\epsilon)$, $\theta_3=Cov(v,u)$, $\theta_4=Var(u)$, $\theta_5= Var(\delta)$ y $\theta_6=Var(\delta')$. Como podemos ver la estimación de los parámetros de este modelo presenta un problema. Los parámetros $\theta_1$ y $\theta_2$ no tienen una forma única de determinarse porque si se aumenta uno en alguna cantidad y se disminuye el otro en la misma cantidad, no se altera la matriz de covarianzas predicha por el modelo. Es decir, diferentes $\theta_s$ pueden resultar en la misma matriz de covarianzas. Este tipo de modelos se llaman inidentificables. Un modelo es identificable si y solo si $\Sigma(\theta_1)=\Sigma(\theta_2)$ implica que $\theta_1=\theta_2$. Esta propiedad depende de la elección del modelo y en la especificación de parámetros fijos, parámetros con ciertas restricciones (por ejemplo dos parámetros con la restricción de que sus valores deben ser iguales) y parámetros libres. En general una dificultad es determinar si un modelo es identificable o no, una condición necesaria mas no suficiente para que un modelo sea identificable es que el número de parámetros libres $t$ del modelo sea menor a $q(q+1)/2$l.
+
+### Evaluando el ajuste del modelo. 
+Ya que se determina que el modelo es identificable y se estiman los parámetros, el siguiente paso es evaluar qué tan bien se ajusta la matriz de covarianzas predicha por el modelo con la matriz de covarianzas de las variables observadas. Una medida global del ajuste del modelo está dado por el "likelihood ratio": 
+$$
+X^2=(N-1)FML_{min} 
+$$
+
+donde $N$ es el tamaño de la muestra y $FML_{min}$ es el valor mínimo de la función de discrepancia de máxima verosimilitud. Si el tamaño de la muestra es lo suficientemente grande, $X^2$ permite probar si la matriz de covarianzas de la población de las variables observadas es igual a la matriz de covarianzas estimadas por el modelo, la hipótesis alternativa es que la matriz de la población no tiene restricciones.
+
+Bajo la hipótesis de igualdad entre las matrices, $X^2$ sigue una distribución chi-cuadrada con $v$ grados de libertad dados por $\frac{1}{2}q(q+1)-t$, donde $t$ es el número de parámetros libres del modelo. 
+
+La mejor forma de evaluar el ajuste del modelo es utilizar la medida de $X^2$ junto con uno o más de los siguientes métodos:
+
+1) Inspección visual de las covarianzas residuales (las diferencias de las covarianzas de las variables observadas y las covarianzas predichas por el modelo). Las covarianzas residuales deben ser pequeñas al compararse con los valores observados de covarianzas o correlaciones. 
+2)Examinar los errores estándar de los parámetros y las correlaciones entre estos estimados, si existe una gran correlación esto puede ser un indicador de que el modelo no es identificable. 
+3)Observar si existen parámetros que se salen del rango debido, por ejemplo varianzas negativas o correlaciones mayores a uno. Este tipo de valores indicarían que el modelo ajustado es incorrecto.
+También se han sugerido otros índices del ajuste que pueden ser útiles. Por ejemplo el índice de bondad de ajuste (GFI) está basado en la proporción de la suma de cuadrados de las distancias entre la matriz observada y la matriz estimada por el modelo. El GFI mide la cantidad de varianza y covarianza presente en $S$ que se encuentra representada en la matriz de covarianzas predicha por el modelo $\Sigma(\theta)$. En el caso de estimación por máxima verosimilitud el valor de GFI está dado por:
+$$
+GFI=1-\frac{tr(S\hat\Sigma^{-1}-I)(S\hat\Sigma^{-1}-I)}{tr(S\hat\Sigma^{-1}S\hat\Sigma^{-1})}
+$$
+
+El GFI toma valores entre cero y uno, en la práctica solo valores arriba de .9 o .95 sugieren un ajuste aceptable. Otra medida es el AGFI que ajusta el GFI para el número de grados de libertad del modelo en relación al número de variables. Este está dado por:
+$$
+AGFI=1-(k/df)(1-GFI)
+$$
+Donde $k$ es el número de valores únicos en $S$ y $df$ es el número de grados de libertad del modelo. Otro índice para evaluar el ajuste del modelo es el RMSR (root-mean-square-residual), que es la raíz cuadrada del promedio de las diferencias elevadas al cuadrado entre $S$ y $\hat\Sigma$, para este  índice un valor menor a .05 indica un buen ajuste. 
+
+
+
+
+
+
+
+
