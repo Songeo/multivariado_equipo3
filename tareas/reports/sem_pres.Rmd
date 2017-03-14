@@ -5,7 +5,13 @@ date: "March 15, 2017"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", 
+                      message=FALSE, warning=FALSE)
+```
+
 ## Ecuaciones Estructurales
+
 
 ### Introducción 
 
@@ -18,7 +24,7 @@ diagram”, conociéndose este método como “path analysis”.
 
 <br>
 
-<img src="../doc/tikz6.png" width="800px"/>
+<img src="../doc/tikz6.png" width="500px"/>
 
 <br>
 
@@ -26,50 +32,133 @@ Los modelos de análisis factorial de confirmación son ejemplos relativamente s
 
 El objetivo de las ecuaciones estructurales es explicar las correlaciones o covarianzas de las variables observadas en términos de las relaciones de estas variables con las variables latentes subyacentes asumidas y las relaciones postuladas entre las mismas variables latentes. 
 
+
+---
+
+### Modelo
+
+
+
+---
+
 ### Ejemplo
 
-Veremos el estudi de Wheaton, Muthen, Alwin, and Summers (1977), que se ocupa de la estabilidad en el tiempo de actitudes como la alienación y la relación de tales actitudes con variables de fondo tales como educación y ocupación. Para ello, se recopilaron datos sobre escalas de actitud de 932 personas en dos regiones rurales de Illinois en tres puntos temporales, 1966, 1967 y 1971. Sólo vamos a considerar los datos de 1967 y 1971.
 
-Los puntajes en la escala de anomia y la escala de deficiencia se tomaron como indicadores de la supuesta variable latente, alienación. Se suponía que los años de escolaridad (educación) de un entrevistado y el índice socioeconómico de Duncan eran indicadores del nivel socioeconómico de un encuestado. Se considera que la variable latente socioeconómica afecta a la alienación en ambos puntos temporales, y la alienación en 1967 también afecta a la alienación en 1971.
 
 ```{r, message=FALSE, warning=FALSE}
-library(lavaan)
+# 0. Librerías
+library(tidyverse)
+library(forcats)
+library(foreign)
+library(qgraph)
 library(sem)
-#Matriz de correlación 
-corel <- lav_matrix_lower2full(c(1, .54, 1, -.35, -.29, 1, -.37, -.28, .67,
-                                 1, -.36, -.3, .56, .44, 1, -.41, -.29, .47, .52, .66, 1))
-#colnames(corel) <- row.names(corel) <- c('Educ', 'SEI', 'Anomia71', 'Powles71', #'Anomia67', 'Powles67')
-
-alienation_model <- specifyModel("../data/modalin.txt")
-
-mode <- sem(alienation_model, corel, N = 932)
-
-summary(mode)
+library(lavaan)
+library(semPlot)
+theme_set(theme_bw())
 ```
 
-```{r, echo=TRUE, eval = FALSE}
-pathDiagram(mode)
+```{r}
+# 1. Datos
+data <- read.spss("http://www.methodsconsultants.com/data/intelligence.sav", 
+                  to.data.frame=TRUE)
+head(data)
 ```
 
-```{r, echo=F, fig.align='center'}
-knitr::include_graphics("../doc/pathdiagram.png")
+```{r, fig.width=5, fig.height=4}
+data.cov <- cov(data)
+data.cov %>% 
+  as_tibble() %>% 
+  mutate(nom = rownames(data.cov)) %>% 
+  gather(var.lab, var.val, -nom) %>% 
+  mutate(var.val2 = ifelse(var.lab == nom, NA, var.val), 
+         nom = factor(nom, levels = c('reading', 'writing', 'math', 
+                                      'analytic', 'simpsons', 
+                                      'familyguy',  'amerdad')),
+         var.lab = factor(var.lab, levels = c('reading', 'writing', 'math', 
+                                      'analytic', 'simpsons', 
+                                      'familyguy',  'amerdad'))) %>% 
+  ggplot(aes(x = nom, y = var.lab, fill = var.val2)) + 
+  geom_tile() + 
+  ylab(NULL) + xlab(NULL) +  
+  theme(axis.text.x = element_text(angle = 90)) + 
+  guides(fill = guide_legend("covarianza"))
+```
+
+```{r, fig.width=5, fig.height=4}
+qgraph(cov(data), borders = FALSE, layout = "spring")
+```
+
+
+#### Librería SEM
+
+```{r}
+# 3. librería SEM
+cat(file = "sem_intellect.txt",
+"humor -> simpsons, NA, 1
+humor -> familyguy, l2, NA
+humor -> amerdad, l3, NA
+intell -> reading, l4, NA
+intell -> writing, l5, NA
+intell -> math, l6, NA
+intell -> analytic, l7, NA
+intell -> humor, g1, NA
+simpsons <-> simpsons, e1, NA
+familyguy <-> familyguy, e2, NA
+amerdad <-> amerdad, e3, NA
+reading <-> reading, d1, NA
+writing <-> writing, d2, NA
+math <-> math, d3, NA
+analytic <-> analytic, d4, NA
+intell <-> intell, NA, 1
+humor <-> humor, z1, NA")
+
+specify.sem <- sem::specifyModel(file = "sem_intellect.txt")
+fit.sem <- sem::sem(specify.sem, data.cov, N = 100)
+summary(fit.sem)
+```
+
+```{r, fig.keep='first'}
+pathDiagram(fit.sem)
 ```
 
 
 
-#### Primer paso
 
-Se postula un modelo 
+#### Librería Lavaan
+```{r}
+model <- "
+# latent variable definitions
+humor =~ simpsons + familyguy + amerdad
+intell =~ reading + writing + math + analytic
+# regressions
+intell ~ humor
+"
 
-#### Primer paso
+fit.lav <- lavaan::sem(model, data = data)
+summary(fit.lav, fit.measures=TRUE)
+```
 
-Se postula un modelo, posiblemente con variables latentes.
-
-#### Segundo paso 
-
-
+```{r}
+lavaan::coef(fit.lav) %>% sort()
+```
 
 
-*biblio*
-http://www-personal.umich.edu/~gonzo/papers/sem.pdf
-http://masteres.ugr.es/moea/pages/curso201314/tfm1314/tfm-septiembre1314/memoriamasterantonio_lara_hormigo/!
+```{r, fig.width=11, fig.height=6}
+semPaths(fit.lav, "std", curvePivot = T, layout = "circle2")
+```
+
+
+
+```{r}
+lavaan::modindices(fit.lav)
+```
+
+
+
+
+---
+
+### Referencias
+- http://www-personal.umich.edu/~gonzo/papers/sem.pdf
+
+- http://masteres.ugr.es/moea/pages/curso201314/tfm1314/tfm-septiembre1314/memoriamasterantonio_lara_hormigo/!
