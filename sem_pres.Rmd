@@ -143,12 +143,6 @@ summary(fit.sem)
 pathDiagram(fit.sem)
 ```
 
-<br>
-
-<img src="../doc/red_sem.png" width="500px"/>
-
-<br>
-
 
 
 
@@ -193,7 +187,6 @@ lavaan::modindices(fit.lav)
 ```
 
 En `levaan` no es necesario dar nombre a los parámetros ni especificar la varianza. 
-
 
 
 ---
