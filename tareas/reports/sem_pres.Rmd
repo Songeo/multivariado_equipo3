@@ -37,6 +37,10 @@ El objetivo de las ecuaciones estructurales es explicar las correlaciones o cova
 
 ### Modelo
 
+Este ejemplo muestra cómo estimas un modelo de ecuaciones estructurales (SEM), usando el paquete `sem` y el paquete `lavaan` de R. 
+
+Este modelo de ecuaciones estructurales consiste en dos modelos de medición, uno de inteligencia y otro del sentido del humor. Se supone que la inteligencia es una variable latente que pude medirse con los resultados de las pruebas en cuatro áreas:
+lectura, escritura, matemáticas y análisis. Se supone que el humor es una variable latente que se puede medir por lo mucho que uno disfruta ver los programas: <i>“The Simpsons,” “American Dad,” and “Family Guy.”</i> El modelo también consiste en un consiste en conectar la inteligencia con el humor.
 
 
 ---
@@ -57,12 +61,18 @@ library(semPlot)
 theme_set(theme_bw())
 ```
 
+Los datos se leen de un servidor de [methods consultants](https://www.methodsconsultants.com) los datos están en formato PASW (SPSS).
+
 ```{r}
 # 1. Datos
 data <- read.spss("http://www.methodsconsultants.com/data/intelligence.sav", 
                   to.data.frame=TRUE)
 head(data)
 ```
+
+Las ecuaciones estructurales se estiman usalmente usando la matriz de covarianza de las observaciones. 
+
+Realizamos un analisis exploratorio de la covarianza entre las variables del modelo y se observa que se forman dos grupos uno de los programas “The Simpsons,” “American Dad,” and “Family Guy.”</i> y otro de inteligencia lectura, escritura, matemáticas y análisis. Las variables con mayor coarianza entre ellas son mateáticas con lectura. 
 
 ```{r, fig.width=5, fig.height=4}
 data.cov <- cov(data)
@@ -90,6 +100,18 @@ qgraph(cov(data), borders = FALSE, layout = "spring")
 
 
 #### Librería SEM
+
+##### Especificación del modelo 
+
+El usario especifica el modelo, ya sea directo en R o desde un `.txt`. La sintaxis para `sem::specifyModel()` es la siguiente:
+
+- La primera entrada es la relación entre variables. Cuando se usa `->` se indica que es un coeficiente de regresión y cuando se usa `<->` representa la varianza o covarianza. 
+
+- La segunda entrada es un nombre aleatorio que se la da al parámetro que se va a estatimar. Al introducir `NA` se indica que al parámetro se le da un valor en específico. 
+
+- La tercera entrada es el valor incial o el valor especifico de los parámetros.
+
+Un vez que se tiene el modelo y la matriz de covarianza se usa la función `sem::sem(modelo, matriz, número de observaciones)`.
 
 ```{r}
 # 3. librería SEM
@@ -121,10 +143,27 @@ summary(fit.sem)
 pathDiagram(fit.sem)
 ```
 
+<br>
+
+<img src="../doc/red_sem.png" width="500px"/>
+
+<br>
+
 
 
 
 #### Librería Lavaan
+
+En `lavaan` no se necesita la función que especifica al modelo aunque si se debe especificar un modelo y la forma de hacerlo es la siguiente:
+
+- El operador `=~` define las variables latentes
+
+- El operador `~` define una regresión
+
+- El operador `~~` indica correlación 
+
+Un vez que se tiene el modelo y la matriz de covarianza se usa la función `lavaan::sem(modelo, matriz)`.
+
 ```{r}
 model <- "
 # latent variable definitions
@@ -153,7 +192,7 @@ semPaths(fit.lav, "std", curvePivot = T, layout = "circle2")
 lavaan::modindices(fit.lav)
 ```
 
-
+En `levaan` no es necesario dar nombre a los parámetros ni especificar la varianza. 4
 
 
 ---
@@ -162,3 +201,5 @@ lavaan::modindices(fit.lav)
 - http://www-personal.umich.edu/~gonzo/papers/sem.pdf
 
 - http://masteres.ugr.es/moea/pages/curso201314/tfm1314/tfm-septiembre1314/memoriamasterantonio_lara_hormigo/!
+
+- https://www.methodsconsultants.com/tutorial/structural-equation-models-using-the-sem-package-in-r/
