@@ -1,0 +1,108 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+1. Este ejercicio es para que refresquen su álgebra lineal.
+
+(a) Escribe un pequeño ensayo de uno a tres párrafos e ilustra gráficamente para un caso bidimensional la conexión que hay entre la matriz de covarianzas de una nube de datos $\Sigma = \Sigma (X)$, su descomposición espectral $\Sigma = P\Lambda P^T$, y la curva de nivel uno de su forma cuadrática,i.e., ${x:x^T \Sigma x = 1}$.
+
+```{r warning=FALSE, echo=FALSE}
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+```
+
+Para esta pregunta usamos una base de datos con dos variables y las normalizamos.
+
+```{r}
+dat_ej1a <- read.table("usoEnergia.dat", header = TRUE)
+dat <- dat_ej1a %>% select(x,y)
+#normailizamos
+norm.dat <- scale(dat)
+```
+
+La matriz de covarianzas es simétrica defina positiva. Esta matriz define la forma de los datos, la covarinza captura la orietación, mientras que la extención a lo largo del eje es capturada por la varianza. 
+
+```{r}
+mat_cov <- cov(norm.dat)
+print(mat_cov)
+ggplot(data.frame(norm.dat), aes(x=x, y=y))+
+  geom_point(size = 2, shape = 1)+
+  theme_bw() +
+  coord_fixed(1)
+```
+
+
+Al querer representar la matriz de covarianzas con vectores y sus magnitudes, se busca un vector $v$ que apunte a la dirección donde los datos tienen mayor extensión y cuya magnitud sea igual a la varianza. 
+
+La varianza de los datos proyectados es $v^T\Sigma v$, como se está buscando el vector $v$ que apunte en la dirección con mayor varianza, sus componentes deben maximizar la matriz de covarianzas $v^T\Sigma v$ de los datos proyectados. 
+
+El eigenvector de la matriz de covarianzas siempre apunta en la dirección donde la varianza es mayor, y la magnitud es igual a su eigenvalor correspondiente. 
+
+```{r}
+des_es <- eigen(mat_cov)
+print(des_es)
+ggplot(data.frame(norm.dat), aes(x=x, y=y)) +
+  geom_point(size = 2, shape = 1)+theme_bw() + 
+  geom_segment(aes(x = 0, y = 0, xend = 0.7, yend = 0.7), color = "blue", arrow = arrow())+
+  geom_segment(aes(x = 0, y = 0, xend = -0.7, yend = 0.7), color = "green",arrow = arrow()) +
+  coord_fixed(1)
+```
+
+
+Toda matriz simétrica es diagonalizable y los eigenvectores son ortogonales por lo tanto por lo tanto la matriz de covarianzas $\Sigma$ tiene descomposición espectral.
+
+$\Sigma = P\Lambda P^T$ 
+
+Donde $\Lambda$ es una matriz diagonal formada por los eigenvalores de $\Sigma$ y los vectores columna de $P$ son los eigenvectores de $\Sigma$. 
+
+Las curvas de nivel nos dan elipses cuando son cuadráticas. Tiene que ver que los ejes de las elipses son eigenvectores, cuyas longuitudes son eigenvalores. 
+
+```{r}
+des_es <- eigen(mat_cov)
+print(des_es)
+ggplot(data.frame(norm.dat), aes(x=x, y=y)) +
+  geom_point(size = 2, shape = 1)+theme_bw() + 
+  geom_segment(aes(x = 0, y = 0, xend = 0.7, yend = 0.7), color = "red", arrow = arrow())+
+  geom_segment(aes(x = 0, y = 0, xend = -0.7, yend = 0.7), color = "green",arrow = arrow()) +
+   stat_ellipse(color = "blue") +
+  coord_fixed(1)
+```
+
+(b) Describe la interpretación geométrica de la descomposición SVD y diagonalización como producto de transformaciones por matrices ortogonales y diagonales.
+
+La interpretación geométrica de la descomposición SVD se puede visualizar como una rotación, reflxión y escalamiento.
+
+$A = USV^T$
+
+Al multiplicar por $V^T$ rota y refleja la matriz $X$. Como $S$ sólo tiene valores en la diagonal ordenados $s_1 > s_2 > ... > s_n$ hace un escalamiento en la matriz $X$. $V$ rota la matriz $X$ en una posición donde los eigenvalores ahora representan un factor de escala a lo largo del eje $x$ y $y$. Finalmente $U$ rota y refleja la matriz $X$ de vuelta a la base estándar. Que sería exactamente lo mismo que $Ax$. 
+
+$U$, $V$ son matrices ortogonales y $S$ es una matriz diagonal, por lo tanto la diagonalizaciónque como producto de transformaciones por matrices ortogonales y diagonales es la misma interpretación geométrica que la de SVD. 
+
+(c) ¿Qué relación hay entre la descomposición SVD de una matriz $A$ y la diagonalización de su matriz de covarianzas (suponiendo que $A$ es centrada) (Hint: $\Sigma (A) = \frac{1}{n} A^TA$)?
+
+La nube de datos se puede descomponer en valores singulares que son los eigenvalores de la matriz de covarianzas. 
+
+2. Este ejercicio es para que usen su álgebra lineal en PCA.
+
+(a) Explica la técnica de PCA desde el punto de vista desarrollado en los incisos anterior.
+
+Partiendo de la pregunta anterior el objetivo de PCA es hacer una tranformación lineal usando la descomposición espectral o SVD de la matriz de covarianzas $\Sigma$ de tal forma que se obtengan componentes que resuman la mayor catidad de variación de la nube de datos por medio de una combinación lineal de las varibales. 
+
+(b) ¿Cuál es la relación entre la matriz de loadings en PCA y las correlaciones entre las variables originales y las componentes principales?
+
+Los loadings son dicen cuánto contribuye cada variable original a los componentes principales. 
+
+(c) En PCA, ¿cómo interpretan el significado de las componentes principales? ¿Qué es la rotación varimax?
+
+La componente principal se interpreta en función de las variables más correlacionadas con la misma. 
+
+La rotación varimax efectúa una rotación ortogonal de los ejes factoriales. El objetivo de la rotación es conseguir que la correlación de cada una de las variables sea lo más práxima a 1 con sálo una de las componentes y próxima a cero con todos los demás, i.e. castiga a las variables no apegadas a una componente.
+
+
+
+
+
+
