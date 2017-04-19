@@ -11,33 +11,62 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Pregunta 3
 
-(d)
+###3a
+
+###3b
+
+###3c
+
+Partimos de usar la siguiente medida de distancias:
+$$ dist^2(x,y) = (x-y)^T W (x-y) $$ Con: $W$  positiva  definida.
+
+<i>øcomo cambiarian su medida de media, varianza y covarianza empirica, øcomo cambia la geometria subyacente) ? </i>
+
+<b>Caso 1.</b>
+Supongamos a $W$ como la matriz identidad, es decir: $$W = I_n $$ 
+Dado que $W$ es la matriz identidad, usando la propiadad que para toda matriz $A$ el producto por la matriz identidad es igual a si misma: $$A * I_n = A$$ 
+Podemos afirmar que $dist^2(x,y) = (x-y)^T W (x-y) = (x-y)^T(x-y)$ , sin perdida de generalidad para todo vector $x$ y $y$.  El cual es simplemente la norma euclidiana.
+
+<b>Caso 2.</b>
+Ahora supongamos a que $W$ esta compouesta por la matriz identidad multiplicada por un vector de entradas mayores a cero.
+$$ W∞= I_n*a\quad con \quad a=[a_1 a_2 \dots a_n] \quad a_i>0 \quad \forall i=1, \dots,n $$
+Lo que da como resultado que tengamos una matriz identidad reescalada en magnitud. Es decir, en la diagonal de nuestra matriz $W∞$, encontramos
+unos o valores distintos que 1.
+Supongamos el individuo $i-esimo$. Supongamos que la matriz $W∞$ es igual a la matriz identidad salvo constante $c$ mayor a cero
+en la entrada $i-esima$ de la diagonal. La distancia tomanda del individuo $i-esimo$ con todos los dem·s sufrira de un escalamiento dependiendo
+si $c<1$ o $c>1$; es decir se sobreestimara o subestimar· la distancia euclidiana, seg˙n el valor de $c$.
+Lo que podemos concluir de este caso, es que el alterar la matriz identidad $I_n$ mediante la multiplicacion de un vector con entradas mayor a cero, 
+es que estamos alterando la distani y esto supondria que tenemos un conocimiento previo sobre los individuos, es decir, le estamos aplicando un peso 
+a la distancia basado en un conocimiento a priori.
+
+
+###3d
+La medicion de la similitud o distancias entre dos puntos es un proceso que sirve como base para la implementacion de tecnicas de metodos multivariados.
+Partiendo del caso continuo, es decir, cuando nuestra matriz de individuos $X$ presenta en sus entradas datos continuos podemos pensar en aplicar metodos como el SVM, al medir las distancias entre puntos y poder general el hiperplano separador. Las tecnicas comunes para medir la distancia entre datos continuos son la distancia Euclidiana y la distancia Minkowski.
+Sin embargo, la mediciÛn de similitud en datos categoricos no es trivial como en los datos continuos. El problema central de los datos categoricos es que no tienen una naturaleza ordinal inherente, por lo que comparar datos categoricos directamente <b>no es posible</b>.
+La forma mas usual en encontrar similitudes entre atributos categoricos es mediante la asignaciÛn de $1$ unos en el caso de coincidencia y $0$ en el caso de no-coincidencia. La similitud entre los atributos est· ligada directamente al universo de atributos en el que vive.
+Es apropiado pensar que el uso de la distancia $\chi ^2$ para datos categoricos tiene sentido. Recordar que:
+$$\tilde{\chi}^2=\frac{1}{d}\sum_{k=1}^{n} \frac{(O_k - E_k)^2}{E_k}$$
+Notamos que el numerador denotado por la diferencia al cuadrado denota una comparaciÛn relativa. Podemos pensar al numerador como una diferencia entre individuos (numerador) evaluados respecto al universo en el que viven (denominador).
+
+Ejemplos de el uso de esta distancia para datos categoricos:
+
+$\bullet$ Ejemplo en clase, de color de ojos y pelo. En este ejemplo evaluamos que tan comun o poco comun eran las combinaciones color de ojos y color de pelo.
+
+$\bullet$ En el trabajo de campo de la ecologia y la biologia se evaluan las las similitudes o disimilitudes entre especies. Es evidente que el estudio de estas disciplinas tiene base en muestras, ya que el analizar el universo entero de ciertas especies resultaria imposible.
+
 
 
 ## Pregunta 4
 
+###4a.
+<i>En un parrafo describe el objetivo (no el procedimiento) del Classical Multidimensional Scaling:</i>
 
-<i>(a) En un p√°rrafo describe el objetivo (no el procedimiento) del Classical Multidimensional Scaling:</i>
+El objetivo del Multidimensional Scaling es reconstruir datos $X$ y mapear estos datos.  La motivacion de este metodo se debe a que en muchas ocasiones, dado nuestro experimiento o investigacion, en vez de poder observar distancias euclidianas y medir la separacion entre los individuos de la matriz $X$, solo tenemos <i>Similitudes o disimilitudes>.  Es por eso que el proposito del metodo sera producir estas coordenadas, es decir, el MDS nos da la posibilidad de tener una representacion cartografica de algo que en si, no forma parte del plano $\Re^2$.
 
-El objetivo del Multidimensional Scaling es reconstruir datos $X$ y mapear estos datos.  La motivaci√≥n de este metodo se debe a que en muchas ocasiones, dado nuestro experimiento o investigaci√≥n, en vez de poder observar distancias euclidianas y medir la separaci√≥n entre los individuos de la matriz $X$, s√≥lo tenemos <i>Similitudes o disimilitudes>.  Es por eso que el prop√≥sito del m√©todo ser√° producir estas coordenadas, es decir, el MDS nos da la posibilidad de tener una representaci√≥n cartogr√°fica de algo que en s√≠, no forma parte del plano $\Re^2$.
-
-
+###4b
 (b) [foto, pasar a latex porfoooooooo]
 
 
 
 
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
