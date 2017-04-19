@@ -1,0 +1,43 @@
+---
+title: "Examen_Vic"
+author: "Victor M"
+date: "19 de abril de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pregunta 3
+
+(d)
+
+
+## Pregunta 4
+
+
+<i>(a) En un párrafo describe el objetivo (no el procedimiento) del Classical Multidimensional Scaling:</i>
+
+El objetivo del Multidimensional Scaling es reconstruir datos $X$ y mapear estos datos.  La motivación de este metodo se debe a que en muchas ocasiones, dado nuestro experimiento o investigación, en vez de poder observar distancias euclidianas y medir la separación entre los individuos de la matriz $X$, sólo tenemos <i>Similitudes o disimilitudes>.  Es por eso que el propósito del método será producir estas coordenadas, es decir, el MDS nos da la posibilidad de tener una representación cartográfica de algo que en sí, no forma parte del plano $\Re^2$.
+
+
+(b) [foto, pasar a latex porfoooooooo]
+
+
+
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
