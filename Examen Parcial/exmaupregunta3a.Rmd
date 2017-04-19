@@ -1,0 +1,9 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+3a. 
+Describe los tipos de datos estadísticos y algunas formas usuales de medir distancias entre ellos. 
+Los principales tipos de datos son binarios o booleanos, representan una cualidad y solo tienen dos categorías, por ejemplo verdadero o falso. Datos categóricos o nominales también describen  una cualidad del individuo pero poseen más de dos posibles categorías, por ejemplo nacionalidad. Datos ordinales, son un tipo de datos categóricos que poseen un orden interno por ejemplo si las categorías son malo, regular y bueno se trata de datos ordinales. Por otro lado tenemos otro tipo de datos que son los numéricos y estos pueden ser con escala de razón o de intervalo. En el caso de escala de razón los valores numéricos tienen un valor absoluto, en los de intervalo los valores numéricos representan un valor relativo, por ejemplo al medir latitud y longitud o temperatura. 
+Hay diferents formas de medir la distancia estadística dependiendo del tipo de datos que se estén usando. Para datos de tipo booleano se puede usar la medida de concordancia simple o el coeficiente de Jaccard. Para datos de escala de razón hay muchas formas algunos ejemplos son la distancia de Minkowski o la euclideana. Para datos de intervalo se puede usar la distancia de Canberra o la de  Pearson que tienen la característica de ser invariantes frente a cambios de escala. Para datos categóricos se puede usar la medida de distancia que en genética se conoce como distancia de Cavalli-Sforza. En el caso de datos mixtos se puede usar la medida de distancia de Gower. 
