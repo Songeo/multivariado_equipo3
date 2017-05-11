@@ -26,10 +26,12 @@ str(df.cpj.17)
 
 # Binarias de categoricas multiples
 aux <- df.cpj.17 %>% 
-  dplyr::select(Medium, Job, Coverage) %>% 
+  dplyr::select(Medium, Job, Coverage, `Source of Fire`) %>% 
   rownames_to_column() %>% 
+  mutate(`Source of Fire` = ifelse(is.na(`Source of Fire`), "unknown", `Source of Fire`),
+         Coverage = ifelse(is.na(Coverage), "unknown", Coverage)) %>% 
   gather(var.lab, var.val, -rowname) %>% 
-  separate( var.val , c("1", "2", "3", "4", "5", "6", "7", "8"), sep = ",") %>% 
+  separate( var.val , c("1", "2", "3", "4", "5", "6", "7", "8", "9"), sep = ",") %>% 
   gather(col.num, col.val, c(-rowname, -var.lab)) %>% 
   na.omit() %>% 
   mutate(ind = 1,
