@@ -1,0 +1,370 @@
+---
+title: "Kernel PCA"
+author: "Equipo 3"
+date: "16 de mayo de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Kernel PCA
+
+####Metodos Kernel
+
+En ocasiones, es necesario analizar los datos tomando como base una estructura no lineal.
+
+<b> Definicion</b> Una funcion $k: X \times X \to \Re$ es funcion Kernell si existe un espacio de Hilbert $F$ y una funcion  $\Phi:X \to F$ tal que  para toda $x, y \in X$:
+$$ k(x,y)=\langle\Phi(X). \Phi(Y)\rangle_F$$
+Una funcion Kernel es aquella que calcula directamente el producto interior de dos elementos pertenecientes a $X$ en otro espacio $F$ sin necesidad de calcular explicitamente el valor de las entradas en ese otro espacio.
+
+####Ejemplos de funciones Kernel(clase)
+
+Las funciones kernel nos permiten detectar relaciones no lineales utilizando algoritmos lineales. Si escogemos la funcion kernel apropiada, podemos capturar la estructura no lineal de los datos.
+
+Sea $x,y \in \mathbb{R}^p$:
+
+$\bullet Kernel \quad Lineal$
+$$ k(x,y)=x^Ty $$
+
+
+$\bullet Kernel \quad Polinomial$
+$$ k(x,y)= (ax^Ty+c)^d, \quad d \in \mathbb{Z}, c\geq0,  \alpha \neq0 $$
+$\bullet Kernel \quad Gausiano$
+$$ k(x,y)= \exp(-\frac{\|x-y\|^2}{2\sigma^2}), \sigma\neq0 $$
+Algunos programas reciben el parametro $\gamma= \frac{1}{2\sigma^2}$
+
+$\bullet Kernel \quad Laplaciano$
+$$ k(x,y)= \exp(-\frac{\|x-y\|}{\sigma}), \sigma\neq0 $$
+$\bullet Kernel \quad Tangente \quad Hiperbolico$
+$$ k(x,y)= tanh(\alpha x^Ty+c), \alpha\neq0, c\geq0 $$
+
+###Kernel PCA
+
+Partiendo de un conjunto de datos $X \in  \mathbb{R}^{n\times p}$ se aplica una transformacion $\Phi$, y se mapea al espacio $F$
+
+$$\Phi:X \to F$$
+Y se trabajara con los elementos $$\Phi(x_1), \Phi(x_2),\dots,\Phi(x_n) $$
+
+Supongamos que las $\Phi 's$ estan centradas.  Entonces la matriz de varianzas y covarianzas $C \in \mathbb{R}^{p\times p}$ de los datos transformados es:
+$$C= \frac{1}{n}\sum_{i=1}\Phi(x_i)\Phi(x_i)^T, $$
+
+Ahora, buscaremos obtener los vectores caracteristicos de la matriz de correlaciones. Equivalente a resolver el siguiente sistema:
+$$\lambda v=Cv $$
+
+
+Donde los vectores propios $v$ se pueden expresar como combinacion lineal de $\Phi(x_1), \Phi(x_2),\dots,\Phi(x_n)$, pues
+$$\lambda v=Cv = \frac{1}{n}\sum_{i=1}\Phi(x_i)\Phi(x_i)^Tv,$$
+entonces,
+$$v= \frac{1}{\lambda n}\sum_{i=1}\Phi(x_i)\Phi(x_i)^Tv= \frac{1}{\lambda n}\sum_{i=1}(\Phi(x_i)^Tv)\Phi(x_i), $$
+por lo tanto
+$$v= \sum_{i=1}\alpha_i \Phi(x_i)$$
+Partiendo de $\lambda v=Cv$ se tiene que
+$$\lambda \sum_{i=1}\alpha_i (\Phi(x_k).\Phi(x_i))= \frac{1}{n}\sum_{i=1} \alpha_i \bigg(\Phi(x_k).\sum_{j=1}\Phi(x_j) \bigg)(\Phi(x_j).\Phi(x_i)) $$
+Definiendo la matriz $K \in \mathbb{R}^{nxn}$ como $K_{ij}=(\Phi(x_i).\Phi(x_j))$, lo anterior equivale a 
+$$n \lambda K \alpha =K^2\alpha, $$
+y basta con resolver el problema $n \lambda \alpha = K \alpha$ para valores caracteristicos distintos de cero.
+
+Por lo tanto, $\lambda v=Cv$ se reduce a obtener los vectores propios de la matriz kernel $K$.
+
+Para obtener la componente principal no lineal con respecto a $\Phi$, de un vector $x \in \mathbb{R}^{p}$ con imagen en $F$, se debe calcular su proyeccion en los vectores propios $v_j, (j=1\dots , p)$ de la matriz de varianzas y covarianzas $C$, es decir $(v_j.\Phi(x))$
+
+Usando el truco del Kernel
+$$v_j.\Phi(x) = \sum_{i=1}\alpha_j^i (\Phi(x_i).\Phi(x))=\sum_{i=1}\alpha_j^ik(x_i,x)$$
+donde $\alpha_j^i$ es el elemento $i (i=1, \dots ,n)$ del j-esimo vector caracteristico de C.
+Se tiene una condicion de normalizacion para los vectores caracteristicos de $C, v_1, \dots v_n$
+$$ (v_j.v_j)=1$$
+lo cual se traduce en una condicion sobre los vectores $\alpha$, pues:
+$$(v_j.v_j)= \sum_{i=1}\alpha_j^i \alpha_j^k (\Phi(x_i).\Phi(x_k))=\alpha_j K \alpha_j = \lambda_j(\alpha_j . \alpha_j)$$
+
+y por lo tanto
+
+$$\lambda_j(\alpha_j . \alpha_j)=1$$
+
+
+
+
+
+####Ejemplo práctico:clasificación de dígitos escritos a mano 
+Los datos utilizados provienen de la base de reconocimiento de dígitos
+escritos a mano del paquete ElemStatLearn de R. Ésta consiste en imágenes
+normalizadas de sobres escaneados del Servicio Postal de Estados Unidos,
+resultando en imágenes de 16 x 16 pixeles en escalas de grises.
+
+```{r, message=FALSE, warning=FALSE}
+# 0. Librerias
+library(kernlab)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(ElemStatLearn)
+library(nnet)
+```
+
+####Preparación de los datos y gráfica dígitos
+```{r}
+graficar_digitos <- function(datos){
+  mat_digitos <- lapply(1:nrow(datos), 
+                        function(x){ 
+                          t(matrix(as.numeric(datos[x, 2:257]), 
+                                   16, 16, byrow = T))[,16:1]
+                        })
+  image (z = Reduce("rbind", mat_digitos), col = terrain.colors(30))
+  text(seq(0,1,1/10) + 0.05, 0.05, label = datos[, 1], cex = 1.5)
+}
+
+
+set.seed(122803)
+zip_train <- data.frame(zip.train)
+zip_test<-data.frame(zip.test)
+muestra <- zip_train %>% sample_n(10)
+graficar_digitos(muestra)
+```
+
+```{r}
+muestra <- sample(1:nrow(zip_train),2000)
+muestra_dig <- zip_train[muestra,]
+```
+
+####PCA
+```{r}
+pca <- prcomp(~.,data=muestra_dig[,-1])
+matrix_pca<-as.data.frame(pca$x)
+matrix_pca$digito <- as.character(muestra_dig$X1)
+
+
+
+plot1<-qplot(PC1,PC2,data=matrix_pca,color=factor(digito))+
+  xlab("Primer Componente")+ylab("Segunda Componente") + theme(legend.title=element_blank())
+plot2<-qplot(PC2,PC3,data=matrix_pca,color=factor(digito))+
+  xlab("Segunda Componente")+ylab("Tercer Componente") + theme(legend.title=element_blank())
+plot3<-qplot(PC3,PC4,data=matrix_pca,color=factor(digito))+
+  xlab("Tercer Componente")+ylab("Cuarta Componente") + theme(legend.title=element_blank())
+plot4<-qplot(PC4,PC5,data=matrix_pca,color=factor(digito))+
+  xlab("Cuarta Componente")+ylab("Quinta Componente") + theme(legend.title=element_blank())
+grid.arrange(plot1, plot2, plot3, plot4) 
+```
+
+#####Proyección de una submuestra:
+```{r}
+muestra2 <- sample(1:nrow(matrix_pca),500)
+matrix_pca2 <- matrix_pca[muestra2,]
+ggplot(matrix_pca2, aes(x=PC1, y=PC2, colour=digito, label=digito)) + geom_text(size=4) +
+  theme(legend.title=element_blank())
+```
+
+#####Proyecciones de las dos primeras componentes separando por dígitos
+```{r}
+#
+dat.comp <- data.frame(pca$x[, 1:2], digito = muestra_dig[, 1])
+dat.comp <- subset(dat.comp, digito == 0 | digito == 1)
+plotpca1<-ggplot(dat.comp, aes(x = PC1, y = PC2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-15, 10)) +  scale_y_continuous(limits = c(-10, 10))
+
+#
+dat.comp <- data.frame(pca$x[, 1:2], digito = muestra_dig[, 1])
+dat.comp <- subset(dat.comp, digito == 2 | digito == 3)
+plotpca2<-ggplot(dat.comp, aes(x = PC1, y = PC2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-15, 10)) +  scale_y_continuous(limits = c(-10, 10))
+
+#
+dat.comp <- data.frame(pca$x[, 1:2], digito = muestra_dig[, 1])
+dat.comp <- subset(dat.comp, digito == 4 | digito == 5)
+plotpca3<-ggplot(dat.comp, aes(x = PC1, y = PC2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-15, 10)) +  scale_y_continuous(limits = c(-10, 10))
+
+#
+dat.comp <- data.frame(pca$x[, 1:2], digito = muestra_dig[, 1])
+dat.comp <- subset(dat.comp, digito == 6 | digito == 7)
+plotpca4<-ggplot(dat.comp, aes(x = PC1, y = PC2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-15, 10)) +  scale_y_continuous(limits = c(-10, 10))
+
+#
+dat.comp <- data.frame(pca$x[, 1:2], digito = muestra_dig[, 1])
+dat.comp <- subset(dat.comp, digito == 8 | digito == 9)
+plotpca5<-ggplot(dat.comp, aes(x = PC1, y = PC2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-15, 10)) +  scale_y_continuous(limits = c(-10, 10))
+grid.arrange(plotpca1, plotpca2, plotpca3, plotpca4, plotpca5)
+```
+
+#####Se ajustó una regresión multinomial con las primeras veinte componentes y se estimó el número de dígitos correctamente clasificados 
+```{r}
+matrix_pca<-as.data.frame(pca$x)
+
+matrix.pca.reg <- cbind(matrix_pca[,1:20],digito=as.character(muestra_dig$X1))
+
+fit.pca <- multinom(digito ~ .,data=matrix.pca.reg)
+test.pca <- predict(pca,zip_test[,-1])
+pred.pca.reg <- predict(fit.pca, newdata = data.frame(test.pca),
+                        type="class") # predicted values
+
+varaux <- rep(0,2007)
+test.pca.2 <- as.data.frame(cbind(zip_test[,1],
+                                  as.factor(pred.pca.reg),varaux))
+
+test.pca.2$V2 <- test.pca.2$V2 - 1
+test.pca.2$varaux <- replace(varaux, which(test.pca.2$V1 != test.pca.2$V2), 1)
+tabla<-table(test.pca.2$V1,test.pca.2$V2)
+
+tabla2 <- round(prop.table(table(test.pca.2$V1,test.pca.2$V2),1),4)
+pca_accuracy_20<-data.frame(Digito=numeric(), Accuracy=numeric())
+for(i in 1:10){
+  pca_accuracy_20[i,"Digito"]=as.character(i-1)
+  pca_accuracy_20[i,"Accuracy"]=tabla2[i,i]
+}
+
+
+aciertos<-sum(diag(tabla))
+total<-sum(tabla[1,], tabla[2,], tabla[3,], tabla[4,], tabla[5,], tabla[6,], tabla[7,], tabla[8,], tabla[9,], tabla[10,])
+aciertos_fraction<-aciertos/total
+
+pca_accuracy_20[11,"Accuracy"]<-aciertos_fraction
+pca_accuracy_20[11,"Digito"]<-"Global"
+pca_accuracy_20
+```
+
+####PCA Basado en kernels
+Para este método se utilizó un kernel Gaussiano con valor $\gamma=0.01$
+
+```{r}
+kpc <- kpca(~.,data=muestra_dig[,-1],kernel="rbfdot",
+            kpar=list(sigma = .01),features=5)
+matrix.kpca<-as.data.frame(rotated(kpc))
+matrix.kpca$digito <- as.character(muestra_dig$X1)
+
+kpcplot1<-qplot(V1,V2,data=matrix.kpca,color=factor(digito))+
+  xlab("Primer Componente")+ylab("Segunda Componente") + theme(legend.title=element_blank())
+kpcplot2<-qplot(V2,V3,data=matrix.kpca,color=factor(digito))+
+  xlab("Segunda Componente")+ylab("Tercer Componente") + theme(legend.title=element_blank())
+kpcplot3<-qplot(V3,V4,data=matrix.kpca,color=factor(digito))+
+  xlab("Tercer Componente")+ylab("Cuarta Componente") + theme(legend.title=element_blank())
+kpcplot4<-qplot(V4,V5,data=matrix.kpca,color=factor(digito))+
+  xlab("Cuarta Componente")+ylab("Quinta Componente") + theme(legend.title=element_blank())
+grid.arrange(kpcplot1, kpcplot2, kpcplot3, kpcplot4) 
+
+```
+
+#####Proyección de una submuestra
+
+```{r}
+matrix.kpca2 <- matrix.kpca[muestra2,]
+ggplot(matrix.kpca2, aes(x=V1, y=V2, colour=digito, label=digito)) + geom_text(size=4) +
+  theme(legend.title=element_blank())
+
+```
+
+#####Proyecciones de las dos primeras componentes separando por dígitos 
+
+```{r}
+#
+dat.kpca <- data.frame(matrix.kpca[, 1:2], digito = muestra_dig[, 1])
+dat.kpca <- subset(dat.kpca, digito == 0 | digito == 1)
+plotkpca1<-ggplot(dat.kpca, aes(x = V1, y = V2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-20, 40)) +  scale_y_continuous(limits = c(-20, 30))
+
+#
+dat.kpca <- data.frame(matrix.kpca[, 1:2], digito = muestra_dig[, 1])
+dat.kpca <- subset(dat.kpca, digito == 2 | digito == 3)
+plotkpca2<-ggplot(dat.kpca, aes(x = V1, y = V2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-20, 40)) +  scale_y_continuous(limits = c(-20, 30))
+
+#
+dat.kpca <- data.frame(matrix.kpca[, 1:2], digito = muestra_dig[, 1])
+dat.kpca <- subset(dat.kpca, digito == 4 | digito == 5)
+plotkpca3<-ggplot(dat.kpca, aes(x = V1, y = V2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-20, 40)) +  scale_y_continuous(limits = c(-20, 30))
+
+#
+dat.kpca <- data.frame(matrix.kpca[, 1:2], digito = muestra_dig[, 1])
+dat.kpca <- subset(dat.kpca, digito == 6 | digito == 7)
+plotkpca4<-ggplot(dat.kpca, aes(x = V1, y = V2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-20, 40)) +  scale_y_continuous(limits = c(-20, 30))
+
+#
+dat.kpca <- data.frame(matrix.kpca[, 1:2], digito = muestra_dig[, 1])
+dat.kpca <- subset(dat.kpca, digito == 8 | digito == 9)
+plotkpca5<-ggplot(dat.kpca, aes(x = V1, y = V2)) +
+  facet_wrap(~digito) + geom_vline(xintercept = 0, col ="salmon") +
+  geom_hline(yintercept = 0, col="salmon") +
+  geom_point(alpha=0.2) +
+  scale_x_continuous(limits = c(-20, 40)) +  scale_y_continuous(limits = c(-20, 30))
+grid.arrange(plotkpca1, plotkpca2, plotkpca3, plotkpca4, plotkpca5)
+```
+
+#####Tomando las primeras 20 componentas del PCA basado en kernel Gaussiano se hizo una regresión multinomial 
+
+```{r}
+kpc <- kpca(~.,data=muestra_dig[,-1],kernel="rbfdot",
+            kpar=list(sigma = .01),features=20)
+
+matrix.kpca<-as.data.frame(rotated(kpc))
+matrix.kpca$digito <- as.character(muestra_dig$X1)
+
+matrix.kpca.reg <- cbind(matrix.kpca[,1:20],digito=matrix.kpca$digito)
+
+fit.kpca <- multinom(digito ~ .,data=matrix.kpca.reg)
+
+
+test.kpca <- as.data.frame(predict(kpc,zip_test[,-1]))
+names(test.kpca) <- c("V1","V2","V3","V4","V5","V6","V7","V8","V9","V10",
+                      "V11","V12","V13","V14","V15","V16","V17","V18","V19","V20")
+pred.kpca.reg <- predict(fit.kpca, newdata = data.frame(test.kpca),
+                         type="class") # predicted values
+
+
+varaux2 <- rep(0,2007)
+test.kpca.2 <- as.data.frame(cbind(zip_test[,1],
+                                   as.factor(pred.kpca.reg),varaux2))
+
+test.kpca.2$V2 <- test.kpca.2$V2 - 1
+
+test.kpca.2$varaux2 <- replace(varaux2, which(test.kpca.2$V1 != test.kpca.2$V2), 1)
+
+
+tablakpca<-table(test.kpca.2$V1,test.kpca.2$V2)
+#renglones reales, columnas estimadas
+tablakpca2 <- round(prop.table(table(test.kpca.2$V1,test.kpca.2$V2),1),4)
+kpca_accuracy<-data.frame(Digito=numeric(), Accuracy=numeric())
+
+for(i in 1:10){
+  kpca_accuracy[i,"Digito"]=as.character(i-1)
+  kpca_accuracy[i, "Accuracy"]=(tablakpca2[i,i])
+}
+
+aciertoskpca<-sum(diag(tablakpca))
+aciertos_fractionkpca<-aciertoskpca/total
+
+kpca_accuracy[11,"Accuracy"]<-aciertos_fractionkpca
+kpca_accuracy[11,"Digito"]<-"Global"
+kpca_accuracy
+```
