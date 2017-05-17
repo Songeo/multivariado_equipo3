@@ -1,0 +1,235 @@
+---
+title: "Untitled"
+author: "Sonia Mendizábal"
+date: "5/16/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+```{r, echo = F}
+library(tidyverse)
+library(FactoMineR)
+library(ggbiplot)
+library(kernlab)
+library(gridExtra)
+theme_set(theme_bw())
+```
+
+
+
+La base se obtuvo del repositorio de la Universidad de Irvine California (UCI).
+Consiste de imágenes de 400 x 400 pixeles de 762 billetes verdaderos y 610 billetes
+falsificados, a las cuáles se les aplicó una transformación Wavelet 
+para extraer características. En total, se tienen 1372 observaciones con 
+las siguientes 5 variables: variance, skewness, 
+curtosis, entropy y class.
+
+En la siguiente gráfica se muestra la distribución de 
+cada variable de la transformación por clase (billete verdadero o falso).
+Se puede observar que únicamente en varianza se observa una
+distribución diferente entre clases. 
+
+```{r}
+df.bank <- read_delim(
+  "https://archive.ics.uci.edu/ml/machine-learning-databases/00267/data_banknote_authentication.txt",
+          ",",
+          col_names = c("variance", "skewness", "curtosis", "entropy", "class"))
+df.bank <- df.bank %>% mutate(class = factor(class))
+# saveRDS(df.bank, "../tareas/data/data_banknote_authentication.Rds")
+head(df.bank)
+dim(df.bank)
+df.bank %>% 
+  gather(var.lab, var.val, 1:4) %>% 
+  ggplot(aes(x = var.val, fill = factor(class))) + 
+  # geom_density(alpha = .5) +
+  geom_histogram(alpha = .5, position = "dodge", bins = 20) +
+  facet_wrap(~var.lab, scales = "free") + 
+  ylab("count") + 
+  xlab(NULL)
+```
+
+
+Para el ejercicio, se divide la muestra en dos partes. El 70% de los
+datos se toma como muestra de entrenamiento y el resto como 
+muestra de prueba. Es importante mencionar que los datos considerados 
+en el ejercicio son centrados.
+
+
+```{r}
+# Centrados
+tab.cent <- df.bank %>% 
+  select(1:4) %>% 
+  scale(scale = F) %>% 
+  as_tibble()
+names(tab.cent) <- paste0(names(tab.cent), "_c")
+df.bank <- df.bank %>% 
+  cbind(tab.cent) %>% 
+  as_tibble()
+
+# muestra entrenamiento y prueba
+set.seed(161826)
+muestra <- sample(1:nrow(df.bank), size = floor(nrow(df.bank)*.70))
+
+data.train <- df.bank[muestra,]
+data.test <- df.bank[-muestra,]
+```
+
+El objetivo será predecir si un billete es falso considerando las variables
+anteriores implementando componentes principales y componentes principales con
+kernel. Es decir, la predicción se realiza con un modelo logístico 
+donde las variables serán las componentes. 
+
+
+
+### PCA
+
+
+
+
+```{r}
+# muestra de entrenamiento
+pca.bank <- prcomp(data.train %>% 
+                       select(ends_with("_c")))
+summary(pca.bank)
+```
+
+```{r, fig.height=4, fig.width=9}
+# biplot pca entrenamiento
+bip.train <- data.train %>% 
+  cbind(pca.bank$x %>% scale()) %>% 
+  as_tibble() 
+gg.1 <- ggplot(bip.train, aes(x = PC1, y = PC2, 
+                    color = class)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+gg.2 <- ggplot(bip.train, aes(x = PC2, y = PC3, 
+                    color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.3 <- ggplot(bip.train, aes(x = PC3, y = PC4, 
+                    color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+grid.arrange(gg.1, gg.2, gg.3, nrow = 1)
+```
+
+
+
+
+### KPCA
+
+```{r, fig.height=6, fig.width=9}
+# pca kernel entrenamiento
+kpca.bank <- kpca(x =data.train %>% 
+                    select(ends_with("_c")) %>%  as.matrix, 
+            kernel = "rbfdot",
+            kpar = list(sigma=.01),
+            features = 7)
+
+# biplot kpca entrenamiento
+kbip.train <- data.train %>% 
+  cbind(kpca.bank@rotated) %>%
+  # cbind( pcv(kpca.bank) ) %>%
+  as_tibble()
+names(kbip.train)[10:16] <- paste0("PC", 1:7)
+gg.1 <- ggplot(kbip.train, aes(x = PC1, y = PC2, 
+                              color = class)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+gg.2 <- ggplot(kbip.train, aes(x = PC2, y = PC3, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.3 <- ggplot(kbip.train, aes(x = PC3, y = PC4, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.4 <- ggplot(kbip.train, aes(x = PC4, y = PC5, 
+                              color = class)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+gg.5 <- ggplot(kbip.train, aes(x = PC5, y = PC6, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.6 <- ggplot(kbip.train, aes(x = PC6, y = PC7, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+grid.arrange(gg.1, gg.2, gg.3, gg.4, gg.5, gg.6, nrow = 2)
+```
+
+
+
+### Regresión PCA
+
+```{r}
+# ---- # 
+# regresiones pca
+mod.pca <- glm(formula = class ~ PC1 + PC2 + PC3 + PC4 , 
+               data = bip.train, 
+               family = binomial(link = 'logit'))
+# entrenamiento
+table(predict(mod.pca, type = "response") %>% round, 
+      bip.train$class)
+```
+
+```{r}
+# prueba
+pca.fit.test <- predict(pca.bank, data.test %>% select(ends_with("_c")))
+bip.test <- data.test %>% 
+  cbind(pca.fit.test) %>% 
+  as_tibble() 
+tab <- table(bip.test$class, 
+             round(predict(mod.pca, bip.test, type = "response")))
+tab
+prop.table(tab, 2) %>% round(2)
+```
+
+```{r}
+aciertos <- bip.test$class == round(predict(mod.pca, bip.test, type = "response"))
+sum(aciertos)/length(aciertos)
+```
+
+
+
+
+
+### Regresiones KPCA
+
+
+```{r}
+# ----
+# regresiones kpca
+mod.kpca <- glm(formula = class ~ PC1 + PC2 + PC3 + PC4, 
+               data = kbip.train, 
+               family = binomial(link = 'logit'))
+# entrenamiento
+table(kbip.train$class, 
+      predict(mod.kpca, type = "response") %>% round)
+```
+
+```{r}
+# prueba
+pca.fit.test <- predict(kpca.bank, data.test %>% select(ends_with("_c")))
+kbip.test <- data.test %>% 
+  cbind(pca.fit.test) %>% 
+  as_tibble() 
+names(kbip.test)[10:16] <- paste0("PC", 1:7)
+```
+
+```{r}
+tab <- table(kbip.test$class, 
+             round(predict(mod.kpca, kbip.test, type = "response")) )
+tab
+prop.table(tab, 2) %>%  round(2)
+```
+
+```{r}
+aciertos <- kbip.test$class == round(predict(mod.kpca, kbip.test, type = "response"))
+sum(aciertos)/length(aciertos)
+```
+
