@@ -1,0 +1,158 @@
+---
+title: "Ejemplo Juguete"
+output: html_notebook
+---
+
+Con el fin de ilustrar esta técnica se generaron aleatoriamente círculos concéntricos de tres diferentes radios que lucen como se presenta en la siguiente imagen:
+
+```{r echo=FALSE}
+#se generan 3 circulos 150 puntos cada uno se distribuyen uniforme con radio
+#1, 2.8 y 5 , y Gaussian noise with standard deviation 0.25 added to each point
+library(ggplot2)
+set.seed(123)
+#circulo radio 5
+x3 <- runif(75,-5,5)
+y3 <- c(sqrt(25-x3^2), -sqrt(25-x3^2))
+z3 <- rep(5,150)
+noise3 <- rnorm(150,0,.25)
+x3 <- x3 + noise3
+y3 <- y3 + noise3
+#circulo radio 2.8
+x2 <- runif(75,-2.8,2.8)
+y2 <- c(sqrt(2.8^2-x2^2), -sqrt(2.8^2-x2^2))
+z2 <- rep(2.8,150)
+noise2 <- rnorm(150,0,.25)
+x2 <- x2 + noise2
+y2 <- y2 + noise2
+#circulo radio 1
+x1 <- runif(75,-1,1)
+y1 <- c(sqrt(1-x1^2), -sqrt(1-x1^2))
+z1 <- rep(1,150)
+noise1 <- rnorm(150,0,.25)
+x1 <- x1 + noise1
+y1 <- y1 + noise1
+#juntado los datos
+datos <- data.frame(x=c(x1,x2,x3), y=c(y1,y2,y3),z=c(z1,z2,z3))
+ggplot(datos, aes(x, y, color=factor(z))) + geom_point() + coord_fixed() + xlim(-5.6,5.6) + ylim(-5.6,5.6) + theme_bw() + scale_color_discrete(name="Círculo de radio:")
+```
+
+
+Se realiza Análisis de Componentes Principales basado en kernels variando la función kernel utilizada con el objetivo de comparar los resultados.
+
+Se necesita installar el paquete `kernlab` y se usa la función `kpca(...)`.
+
+En las siguientes figuras se muestra el kernel gaussiano con una $sigma = .2$ ,$.1$ y $.5$ respectibamente, se piden 2 componentes principales. 
+
+```{r warning=FALSE}
+library(kernlab)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+theme_set(theme_bw())
+#kernel gaussiano
+kpc_gaus <- kpca(~.,
+                 data = datos[],
+                 kernel="rbfdot", 
+                 kpar=list(sigma=.2), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_gaus))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() +
+  scale_color_discrete(name="Círculo de radio:")
+
+kpc_gaus <- kpca(~.,
+                 data = datos,
+                 kernel="rbfdot", 
+                 kpar=list(sigma=.1), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_gaus))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() +
+  scale_color_discrete(name="Círculo de radio:")
+
+kpc_gaus <- kpca(~.,
+                 data = datos,
+                 kernel="rbfdot", 
+                 kpar=list(sigma=.5), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_gaus))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() +
+  scale_color_discrete(name="Círculo de radio:")
+```
+
+En la siguientes figuras se usa un kernel polinomial de orden 2 y 3. Con 2 componentes principales.
+
+```{r warning=FALSE}
+#kernel polinomial
+kpc_pol <- kpca(~.,
+                 data = datos,
+                 kernel="polydot", 
+                 kpar=list(degree=2), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_pol))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + scale_color_discrete(name="Círculo de radio:")
+
+kpc_pol <- kpca(~.,
+                 data = datos,
+                 kernel="polydot", 
+                 kpar=list(degree=3), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_pol))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + scale_color_discrete(name="Círculo de radio:")
+```
+
+La siguiente figura muestra el kernel tangente con $scala$ = $.1$ y dos componentes principales. 
+
+```{r warning=FALSE}
+#kernel tangente
+kpc_tan <- kpca(~.,
+                 data = datos,
+                 kernel="tanhdot",
+                 kpar =list(scale = .1),
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_tan))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + scale_color_discrete(name="Círculo de radio:")
+```
+
+La siguiente figura muestra el kernel laplace con $sigma$ = $1$ y dos componentes principales. 
+
+```{r warning=FALSE}
+
+#kernel laplace
+kpc_lap <- kpca(~.,
+                 data = datos,
+                 kernel="laplacedot", 
+                 kpar=list(sigma=1),
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_lap))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + scale_color_discrete(name="Círculo de radio:")
+```
+
+Kernel lineal 
+
+```{r warning=FALSE}
+
+#kernel lineal 
+kpc_lap <- kpca(~.,
+                 data = datos,
+                 kernel="vanilladot", 
+                  kpar = list(),
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_lap))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + scale_color_discrete(name="Círculo de radio:")
+```
+
