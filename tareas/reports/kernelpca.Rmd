@@ -9,9 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Kernel PCA
 
-####Metodos Kernel
+###Metodos Kernel
 
 En ocasiones, es necesario analizar los datos tomando como base una estructura no lineal.
 
@@ -19,7 +18,7 @@ En ocasiones, es necesario analizar los datos tomando como base una estructura n
 $$ k(x,y)=\langle\Phi(X). \Phi(Y)\rangle_F$$
 Una funcion Kernel es aquella que calcula directamente el producto interior de dos elementos pertenecientes a $X$ en otro espacio $F$ sin necesidad de calcular explicitamente el valor de las entradas en ese otro espacio.
 
-####Ejemplos de funciones Kernel(clase)
+#### Ejemplos de funciones Kernel (clase)
 
 Las funciones kernel nos permiten detectar relaciones no lineales utilizando algoritmos lineales. Si escogemos la funcion kernel apropiada, podemos capturar la estructura no lineal de los datos.
 
@@ -31,15 +30,16 @@ $$ k(x,y)=x^Ty $$
 
 $\bullet Kernel \quad Polinomial$
 $$ k(x,y)= (ax^Ty+c)^d, \quad d \in \mathbb{Z}, c\geq0,  \alpha \neq0 $$
-$\bullet Kernel \quad Gausiano$
+$\bullet Kernel \quad Gaussiano$
 $$ k(x,y)= \exp(-\frac{\|x-y\|^2}{2\sigma^2}), \sigma\neq0 $$
 Algunos programas reciben el parametro $\gamma= \frac{1}{2\sigma^2}$
 
 $\bullet Kernel \quad Laplaciano$
 $$ k(x,y)= \exp(-\frac{\|x-y\|}{\sigma}), \sigma\neq0 $$
 $\bullet Kernel \quad Tangente \quad Hiperbolico$
-$$ k(x,y)= tanh(\alpha x^Ty+c), \alpha\neq0, c\geq0 $$
-###Kernel PCA
+$$ k(x,y)= tanh(\alpha x^Ty+c), \alpha\neq0, c\geq0 $$.
+
+###Funcion Kernel a PCA
 
 Partiendo de un conjunto de datos $X \in  \mathbb{R}^{n\times p}$ se aplica una transformacion $\Phi$, y se mapea al espacio $F$
 
@@ -79,4 +79,440 @@ $$(v_j.v_j)= \sum_{i=1}\alpha_j^i \alpha_j^k (\Phi(x_i).\Phi(x_k))=\alpha_j K \a
 
 y por lo tanto
 
-$$\lambda_j(\alpha_j . \alpha_j)=1$$
+$$\lambda_j(\alpha_j . \alpha_j)=1$$.
+
+###Ejemplo 1, Puntos de Circunferencia
+
+
+Un primera forma para ilustrar el <i>Kernel PCA</i>, es generar puntos aleatorios correspondientes a circunferencias.
+
+Tomamos 3 radios distintos para generar 150 puntos correspondientes a tres diferentes circunferencias. Es decir, generamos 450 puntos.
+
+$$R_1=1 \quad R_2=2.8 \quad R_3=5$$
+$$ x^2+y^2=R_i + c $$
+
+```{r echo=FALSE}
+#se generan 3 circulos 150 puntos cada uno se distribuyen uniforme con radio
+#1, 2.8 y 5 , y Gaussian noise with standard deviation 0.25 added to each point
+library(ggplot2)
+set.seed(123)
+#circulo radio 5
+x3 <- runif(75,-5,5)
+y3 <- c(sqrt(25-x3^2), -sqrt(25-x3^2))
+z3 <- rep(5,150)
+noise3 <- rnorm(150,0,.25)
+x3 <- x3 + noise3
+y3 <- y3 + noise3
+#circulo radio 2.8
+x2 <- runif(75,-2.8,2.8)
+y2 <- c(sqrt(2.8^2-x2^2), -sqrt(2.8^2-x2^2))
+z2 <- rep(2.8,150)
+noise2 <- rnorm(150,0,.25)
+x2 <- x2 + noise2
+y2 <- y2 + noise2
+#circulo radio 1
+x1 <- runif(75,-1,1)
+y1 <- c(sqrt(1-x1^2), -sqrt(1-x1^2))
+z1 <- rep(1,150)
+noise1 <- rnorm(150,0,.25)
+x1 <- x1 + noise1
+y1 <- y1 + noise1
+#juntado los datos
+datos <- data.frame(x=c(x1,x2,x3), y=c(y1,y2,y3),z=c(z1,z2,z3))
+ggplot(datos, aes(x, y, color=factor(z))) + geom_point() + coord_fixed() + xlim(-5.6,5.6) + ylim(-5.6,5.6) + theme_bw() + scale_color_discrete(name="Círculo de radio:")
+```
+
+
+Se realiza Análisis de Componentes Principales basado en kernels cambiando la función kernel utilizada con el objetivo de comparar los resultados.
+
+Necesitamos el paquete `kernlab` y se usa la función `kpca(...)`.
+
+####Kernel Gaussiano
+En las siguientes figuras se muestra KPCA usando la funcion <i>Kernel Gaussiano</i> y variando el parametro $\sigma$ tal que,  $$\sigma_1 = 0.2, \quad \sigma_2=0.1,\quad \sigma_3=0.5$$.
+
+
+
+$$ k(x,y)= \exp(-\frac{\|x-y\|^2}{2\sigma^2}), \sigma\neq0 $$
+```{r warning=FALSE, fig.height=4, fig.width=8}
+library(kernlab)
+library(magrittr)
+library(dplyr)
+library(gridExtra)
+library(tidyr)
+theme_set(theme_bw())
+#kernel gaussiano
+kpc_gaus <- kpca(~.,
+                 data = datos[],
+                 kernel="rbfdot", 
+                 kpar=list(sigma=.2), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_gaus))
+matrix.kpca$Z <- datos$z
+gg1<-ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() +
+  xlab("PC1")+
+  ylab("PC2")+
+  scale_color_discrete(name="Círculo de radio:")+
+  theme(legend.position = "bottom")
+gg1
+
+kpc_gaus <- kpca(~.,
+                 data = datos,
+                 kernel="rbfdot", 
+                 kpar=list(sigma=.1), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_gaus))
+matrix.kpca$Z <- datos$z
+gg2<-ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() +
+  xlab("PC1")+
+  ylab("PC2")+
+  scale_color_discrete(name="Círculo de radio:")+
+  theme(legend.position = "bottom")
+gg2
+
+kpc_gaus <- kpca(~.,
+                 data = datos,
+                 kernel="rbfdot", 
+                 kpar=list(sigma=.5), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_gaus))
+matrix.kpca$Z <- datos$z
+gg3<-ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() +
+  xlab("PC1")+
+  ylab("PC2")+
+  scale_color_discrete(name="Círculo de radio:")+
+  theme(legend.position = "bottom")
+gg3
+grid.arrange(gg1,gg2,gg3, nrow=1)
+```
+
+####Kernel Gaussiano
+En las siguientes figuras se muestra KPCA usando la funcion <i>Kernel Polinomial</i> de orden 2 y 3.
+
+$$d_1=2, \quad d_2=3$$
+
+$$ k(x,y)= (ax^Ty+c)^d, \quad d \in \mathbb{Z}, c\geq0,  \alpha \neq0 $$
+
+```{r warning=FALSE}
+#kernel polinomial
+kpc_pol <- kpca(~.,
+                 data = datos,
+                 kernel="polydot", 
+                 kpar=list(degree=2), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_pol))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + 
+  xlab("PC1")+
+  ylab("PC2")+
+  scale_color_discrete(name="Círculo de radio:")
+
+kpc_pol <- kpca(~.,
+                 data = datos,
+                 kernel="polydot", 
+                 kpar=list(degree=3), 
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_pol))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + 
+  xlab("PC1")+
+  ylab("PC2")+ scale_color_discrete(name="Círculo de radio:")
+```
+
+####Kernel Tangente
+En las siguientes figuras se muestra KPCA usando la funcion <i>Kernel Tangente Hiperbolico</i> con $escala$ = $.1$ y dos componentes principales. 
+
+$$ k(x,y)= tanh(\alpha x^Ty+c), \alpha\neq0, c\geq0 $$.
+
+```{r warning=FALSE}
+#kernel tangente
+kpc_tan <- kpca(~.,
+                 data = datos,
+                 kernel="tanhdot",
+                 kpar =list(scale = .1),
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_tan))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + 
+  xlab("PC1")+
+  ylab("PC2")+ scale_color_discrete(name="Círculo de radio:")
+```
+
+####Kernel Laplaciano
+En las siguientes figuras se muestra KPCA usando la funcion <i>Kernel Laplace</i> con parametro $sigma$ = $1$ y dos componentes principales. 
+$$\sigma=1 $$
+$$ k(x,y)= \exp(-\frac{\|x-y\|}{\sigma}), \sigma\neq0 $$
+```{r warning=FALSE}
+
+#kernel laplace
+kpc_lap <- kpca(~.,
+                 data = datos,
+                 kernel="laplacedot", 
+                 kpar=list(sigma=1),
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_lap))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + 
+  xlab("PC1")+
+  ylab("PC2")+ scale_color_discrete(name="Círculo de radio:")
+```
+
+####Kernel lineal 
+
+Y por ultimo, las primeras dos componentes del Kernel Lineal
+
+```{r warning=FALSE}
+
+#kernel lineal 
+kpc_lap <- kpca(~.,
+                 data = datos,
+                 kernel="vanilladot", 
+                  kpar = list(),
+                 features=2)
+matrix.kpca <- as.data.frame(rotated(kpc_lap))
+matrix.kpca$Z <- datos$z
+ggplot(matrix.kpca, aes(V1, V2, color = factor(Z))) + 
+  geom_point() + 
+  xlab("PC1")+
+  ylab("PC2")+ scale_color_discrete(name="Círculo de radio:")
+```
+
+
+
+```{r, echo = F, warning=F}
+library(tidyverse)
+library(FactoMineR)
+library(ggbiplot)
+library(kernlab)
+library(gridExtra)
+theme_set(theme_bw())
+```
+
+
+
+###Ejemplo Billetes
+
+La base se obtuvo del repositorio de la Universidad de Irvine California (UCI).
+<https://archive.ics.uci.edu/ml/machine-learning-databases/00267/data_banknote_authentication.txt>.
+
+Consiste de imágenes de 400 x 400 pixeles de 762 billetes verdaderos y 610 billetes
+falsificados, a las cuáles se les aplicó una transformación Wavelet 
+para extraer características. En total, se tienen 1372 observaciones con 
+las siguientes 5 variables: 
+-variance, 
+-skewness, 
+-curtosis, 
+-entropy,
+-class.
+
+En la siguiente gráfica se muestra la distribución de 
+cada variable de la transformación por clase (billete verdadero o falso).
+Se puede observar que únicamente en varianza se observa una
+distribución diferente entre clases. 
+
+```{r, echo=F}
+df.bank <- read_delim(
+  "https://archive.ics.uci.edu/ml/machine-learning-databases/00267/data_banknote_authentication.txt",
+          ",",
+          col_names = c("variance", "skewness", "curtosis", "entropy", "class"))
+df.bank <- df.bank %>% mutate(class = factor(class))
+# saveRDS(df.bank, "../tareas/data/data_banknote_authentication.Rds")
+head(df.bank)
+dim(df.bank)
+df.bank %>% 
+  gather(var.lab, var.val, 1:4) %>% 
+  ggplot(aes(x = var.val, fill = factor(class))) + 
+  # geom_density(alpha = .5) +
+  geom_histogram(alpha = .5, position = "dodge", bins = 20) +
+  facet_wrap(~var.lab, scales = "free") + 
+  ylab("count") + 
+  xlab(NULL)
+```
+
+
+Para el ejercicio, se divide la muestra en dos partes. El 70% de los
+datos se toma como muestra de entrenamiento y el resto como 
+muestra de prueba. Es importante mencionar que los datos considerados 
+en el ejercicio son centrados.
+
+
+```{r, echo=F}
+# Centrados
+tab.cent <- df.bank %>% 
+  select(1:4) %>% 
+  scale(scale = F) %>% 
+  as_tibble()
+names(tab.cent) <- paste0(names(tab.cent), "_c")
+df.bank <- df.bank %>% 
+  cbind(tab.cent) %>% 
+  as_tibble()
+
+# muestra entrenamiento y prueba
+set.seed(161826)
+muestra <- sample(1:nrow(df.bank), size = floor(nrow(df.bank)*.70))
+
+data.train <- df.bank[muestra,]
+data.test <- df.bank[-muestra,]
+```
+
+El objetivo será predecir si un billete es falso considerando las variables
+anteriores implementando componentes principales y componentes principales con
+kernel. Es decir, la predicción se realiza con un modelo logístico 
+donde las variables serán las componentes. 
+
+
+
+### PCA
+
+
+
+
+```{r, echo=F}
+# muestra de entrenamiento
+pca.bank <- prcomp(data.train %>% 
+                       select(ends_with("_c")))
+summary(pca.bank)
+```
+
+```{r, fig.height=4, fig.width=9}
+# biplot pca entrenamiento
+bip.train <- data.train %>% 
+  cbind(pca.bank$x %>% scale()) %>% 
+  as_tibble() 
+gg.1 <- ggplot(bip.train, aes(x = PC1, y = PC2, 
+                    color = class)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+gg.2 <- ggplot(bip.train, aes(x = PC2, y = PC3, 
+                    color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.3 <- ggplot(bip.train, aes(x = PC3, y = PC4, 
+                    color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+grid.arrange(gg.1, gg.2, gg.3, nrow = 1)
+```
+
+
+
+
+### KPCA
+
+```{r, fig.height=6, fig.width=9}
+# pca kernel entrenamiento
+kpca.bank <- kpca(x =data.train %>% 
+                    select(ends_with("_c")) %>%  as.matrix, 
+            kernel = "rbfdot",
+            kpar = list(sigma=.01),
+            features = 7)
+
+# biplot kpca entrenamiento
+kbip.train <- data.train %>% 
+  cbind(kpca.bank@rotated) %>%
+  # cbind( pcv(kpca.bank) ) %>%
+  as_tibble()
+names(kbip.train)[10:16] <- paste0("PC", 1:7)
+gg.1 <- ggplot(kbip.train, aes(x = PC1, y = PC2, 
+                              color = class)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+gg.2 <- ggplot(kbip.train, aes(x = PC2, y = PC3, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.3 <- ggplot(kbip.train, aes(x = PC3, y = PC4, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.4 <- ggplot(kbip.train, aes(x = PC4, y = PC5, 
+                              color = class)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+gg.5 <- ggplot(kbip.train, aes(x = PC5, y = PC6, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+gg.6 <- ggplot(kbip.train, aes(x = PC6, y = PC7, 
+                              color = class)) + 
+  geom_point()+ 
+  theme(legend.position = "bottom")
+grid.arrange(gg.1, gg.2, gg.3, gg.4, gg.5, gg.6, nrow = 2)
+```
+
+
+
+### Regresión PCA
+
+```{r}
+# ---- # 
+# regresiones pca
+mod.pca <- glm(formula = class ~ PC1 + PC2 + PC3 + PC4 , 
+               data = bip.train, 
+               family = binomial(link = 'logit'))
+# entrenamiento
+table(predict(mod.pca, type = "response") %>% round, 
+      bip.train$class)
+```
+
+```{r}
+# prueba
+pca.fit.test <- predict(pca.bank, data.test %>% select(ends_with("_c")))
+bip.test <- data.test %>% 
+  cbind(pca.fit.test) %>% 
+  as_tibble() 
+tab <- table(bip.test$class, 
+             round(predict(mod.pca, bip.test, type = "response")))
+tab
+prop.table(tab, 2) %>% round(2)
+```
+
+```{r}
+aciertos <- bip.test$class == round(predict(mod.pca, bip.test, type = "response"))
+sum(aciertos)/length(aciertos)
+```
+
+
+
+
+
+### Regresiones KPCA
+
+
+```{r}
+# ----
+# regresiones kpca
+mod.kpca <- glm(formula = class ~ PC1 + PC2 + PC3 + PC4, 
+               data = kbip.train, 
+               family = binomial(link = 'logit'))
+# entrenamiento
+table(kbip.train$class, 
+      predict(mod.kpca, type = "response") %>% round)
+```
+
+```{r}
+# prueba
+pca.fit.test <- predict(kpca.bank, data.test %>% select(ends_with("_c")))
+kbip.test <- data.test %>% 
+  cbind(pca.fit.test) %>% 
+  as_tibble() 
+names(kbip.test)[10:16] <- paste0("PC", 1:7)
+```
+
+```{r}
+tab <- table(kbip.test$class, 
+             round(predict(mod.kpca, kbip.test, type = "response")) )
+tab
+prop.table(tab, 2) %>%  round(2)
+```
+
+```{r}
+aciertos <- kbip.test$class == round(predict(mod.kpca, kbip.test, type = "response"))
+sum(aciertos)/length(aciertos)
+```
