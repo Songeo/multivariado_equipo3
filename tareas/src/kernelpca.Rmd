@@ -1,0 +1,82 @@
+---
+title: "Kernel PCA"
+author: "Equipo 3"
+date: "16 de mayo de 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Kernel PCA
+
+####Metodos Kernel
+
+En ocasiones, es necesario analizar los datos tomando como base una estructura no lineal.
+
+<b> Definicion</b> Una funcion $k: X \times X \to \Re$ es funcion Kernell si existe un espacio de Hilbert $F$ y una funcion  $\Phi:X \to F$ tal que  para toda $x, y \in X$:
+$$ k(x,y)=\langle\Phi(X). \Phi(Y)\rangle_F$$
+Una funcion Kernel es aquella que calcula directamente el producto interior de dos elementos pertenecientes a $X$ en otro espacio $F$ sin necesidad de calcular explicitamente el valor de las entradas en ese otro espacio.
+
+####Ejemplos de funciones Kernel(clase)
+
+Las funciones kernel nos permiten detectar relaciones no lineales utilizando algoritmos lineales. Si escogemos la funcion kernel apropiada, podemos capturar la estructura no lineal de los datos.
+
+Sea $x,y \in \mathbb{R}^p$:
+
+$\bullet Kernel \quad Lineal$
+$$ k(x,y)=x^Ty $$
+
+
+$\bullet Kernel \quad Polinomial$
+$$ k(x,y)= (ax^Ty+c)^d, \quad d \in \mathbb{Z}, c\geq0,  \alpha \neq0 $$
+$\bullet Kernel \quad Gausiano$
+$$ k(x,y)= \exp(-\frac{\|x-y\|^2}{2\sigma^2}), \sigma\neq0 $$
+Algunos programas reciben el parametro $\gamma= \frac{1}{2\sigma^2}$
+
+$\bullet Kernel \quad Laplaciano$
+$$ k(x,y)= \exp(-\frac{\|x-y\|}{\sigma}), \sigma\neq0 $$
+$\bullet Kernel \quad Tangente \quad Hiperbolico$
+$$ k(x,y)= tanh(\alpha x^Ty+c), \alpha\neq0, c\geq0 $$
+###Kernel PCA
+
+Partiendo de un conjunto de datos $X \in  \mathbb{R}^{n\times p}$ se aplica una transformacion $\Phi$, y se mapea al espacio $F$
+
+$$\Phi:X \to F$$
+Y se trabajara con los elementos $$\Phi(x_1), \Phi(x_2),\dots,\Phi(x_n) $$
+
+Supongamos que las $\Phi 's$ estan centradas.  Entonces la matriz de varianzas y covarianzas $C \in \mathbb{R}^{p\times p}$ de los datos transformados es:
+$$C= \frac{1}{n}\sum_{i=1}\Phi(x_i)\Phi(x_i)^T, $$
+
+Ahora, buscaremos obtener los vectores caracteristicos de la matriz de correlaciones. Equivalente a resolver el siguiente sistema:
+$$\lambda v=Cv $$
+
+
+Donde los vectores propios $v$ se pueden expresar como combinacion lineal de $\Phi(x_1), \Phi(x_2),\dots,\Phi(x_n)$, pues
+$$\lambda v=Cv = \frac{1}{n}\sum_{i=1}\Phi(x_i)\Phi(x_i)^Tv,$$
+entonces,
+$$v= \frac{1}{\lambda n}\sum_{i=1}\Phi(x_i)\Phi(x_i)^Tv= \frac{1}{\lambda n}\sum_{i=1}(\Phi(x_i)^Tv)\Phi(x_i), $$
+por lo tanto
+$$v= \sum_{i=1}\alpha_i \Phi(x_i)$$
+Partiendo de $\lambda v=Cv$ se tiene que
+$$\lambda \sum_{i=1}\alpha_i (\Phi(x_k).\Phi(x_i))= \frac{1}{n}\sum_{i=1} \alpha_i \bigg(\Phi(x_k).\sum_{j=1}\Phi(x_j) \bigg)(\Phi(x_j).\Phi(x_i)) $$
+Definiendo la matriz $K \in \mathbb{R}^{nxn}$ como $K_{ij}=(\Phi(x_i).\Phi(x_j))$, lo anterior equivale a 
+$$n \lambda K \alpha =K^2\alpha, $$
+y basta con resolver el problema $n \lambda \alpha = K \alpha$ para valores caracteristicos distintos de cero.
+
+Por lo tanto, $\lambda v=Cv$ se reduce a obtener los vectores propios de la matriz kernel $K$.
+
+Para obtener la componente principal no lineal con respecto a $\Phi$, de un vector $x \in \mathbb{R}^{p}$ con imagen en $F$, se debe calcular su proyeccion en los vectores propios $v_j, (j=1\dots , p)$ de la matriz de varianzas y covarianzas $C$, es decir $(v_j.\Phi(x))$
+
+Usando el truco del Kernel
+$$v_j.\Phi(x) = \sum_{i=1}\alpha_j^i (\Phi(x_i).\Phi(x))=\sum_{i=1}\alpha_j^ik(x_i,x)$$
+donde $\alpha_j^i$ es el elemento $i (i=1, \dots ,n)$ del j-esimo vector caracteristico de C.
+Se tiene una condicion de normalizacion para los vectores caracteristicos de $C, v_1, \dots v_n$
+$$ (v_j.v_j)=1$$
+lo cual se traduce en una condicion sobre los vectores $\alpha$, pues:
+$$(v_j.v_j)= \sum_{i=1}\alpha_j^i \alpha_j^k (\Phi(x_i).\Phi(x_k))=\alpha_j K \alpha_j = \lambda_j(\alpha_j . \alpha_j)$$
+
+y por lo tanto
+
+$$\lambda_j(\alpha_j . \alpha_j)=1$$
