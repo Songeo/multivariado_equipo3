@@ -55,8 +55,14 @@ tab.motive <- tab.mot %>%
   mutate(quinquenio = cut(year, breaks = seq(1990, 2020, by = 5), 
                           include.lowest = T),
          cuatrienio = cut(year, breaks = seq(1992, 2020, by = 4), 
-                          include.lowest = T))
+                          include.lowest = T)) %>% 
+  ungroup %>% 
+  mutate(cuatrienio = fct_collapse(cuatrienio, 
+                                    `(2012,2017] ` = c("(2012,2016]", "(2016,2020]")))
 tab.motive %>% head
+tab.motive$quinquenio %>% table
+tab.motive$cuatrienio %>% table
+
 cache("tab.motive")
 
 apply(is.na(tab.motive), 2, sum)
@@ -69,22 +75,23 @@ n_distinct(tab.motive$Name)
 
 # ......................................... #
 # Muertes global por año
-tab.motive %>% 
+tab.motive %>%
+  filter(year < 2017) %>% 
   group_by(year) %>% 
   # tally %>% 
   summarise(n = n_distinct(Name)) %>% 
   ggplot(aes(x = year, y = n)) + 
-  geom_bar(stat = "identity", alpha = .7) + 
-  geom_smooth(se = F, color = "blue", 
+  geom_bar(stat = "identity", alpha = .3) + 
+  geom_smooth(se = F, color = "#D0828B", 
               method = "loess", size = 2) + 
   scale_x_continuous(breaks = seq(1992, 2017, by = 2) ) + 
   ylab("número de asesinatos") + 
   xlab("año") +
-  ggtitle("Número de muertes aumenta en 2004") +
-  geom_label(x = 1993, y = 74,
-             label = paste("Global:", n_distinct(tab.motive$Name)), 
-             color = "blue")
-
+  ggtitle("Número de muertes aumenta en 2004",
+          subtitle = paste("Global:", 
+                           n_distinct(tab.motive$Name), 
+                           "muertes.") ) 
+ggsave("graphs/01_ww_trend.png", width = 7, height = 5)
 
 
 tab.motive %>% 
@@ -92,18 +99,22 @@ tab.motive %>%
   # tally %>% 
   summarise(n = n_distinct(Name)) %>% 
   ggplot(aes(x = cuatrienio, y = n)) + 
-  geom_bar(stat = "identity", alpha = .7) + 
+  geom_bar(stat = "identity", alpha = .4) + 
   # geom_hline(yintercept = 238, color = "blue", linetype = 2) +
-  geom_label(aes(label = n), color = "blue") +
+  geom_label(aes(label = n, y = 10), color = "#D0828B",  
+             fontface = "bold") +
   ylab("número de asesinatos") + 
   xlab("cuatrienio") +
-  ggtitle("2008-2016 comportamiento similar a 1992-1996") 
+  ggtitle("2008-2016 comportamiento similar a 1992-1996",
+          subtitle = paste("Global:", 
+                           n_distinct(tab.motive$Name), 
+                           "muertes.")) 
+ggsave("graphs/01_ww_trend_cuatrienio.png", width = 5, height = 4)
 
 
 
 
-
-# ......................................... #
+# ............................................................................ #
 # Frecuencia por país total periodo
 tt <- tab.motive %>% 
   group_by(country_killed) %>% 
@@ -115,14 +126,19 @@ tt$country_killed %>% n_distinct()
 tt %>% 
   rename(freq = n) %>% 
   ggmap_freq(.) + 
-  scale_fill_continuous(low = "#ffe5e5", high = "#B30000",
+  scale_fill_continuous(low = "#cdece8", high = "#4e7c77",
                         na.value = "grey95") +
   guides(fill = guide_legend(title = "# asesinatos")) + 
-  ggtitle("Iraq-Syria mayor número de asesinatos 1992-2017")
-  
-arrange(tt, desc(n)) %>% .[1:15,]
-  
+  ggtitle("Iraq y Syria mayor número de asesinatos 1992-2017")
+ggsave("graphs/mapas_eda/mapa_tot.png", width = 7,height = 6)
 
+tab.top15 <- arrange(tt, desc(n)) %>% .[1:15,]
+cache("tab.top15")
+
+
+
+
+# ............................................................................ #
 
 # Frecuencia por país por cuatrienio
 tab.ggmapy <- tab.motive %>% 
@@ -154,14 +170,23 @@ ggmap_year <- function(tt){
 gg.tib <- tab.ggmapy %>% 
   group_by(cuatrienio) %>% 
   do(ggmap = ggmap_year(.))
-lapply(1:nrow(gg.tib), function(num){
+sapply(1:nrow(gg.tib), function(num){
   ggsave(filename = paste0("graphs/mapas_eda/mapa_cuatri_", num, ".png"),
          plot = gg.tib$ggmap[[num]], width = 7,height = 6)
   "fin"
 })
 
+library(gridExtra)
+gg <- grid.arrange(gg.tib$ggmap[[1]], gg.tib$ggmap[[2]], gg.tib$ggmap[[3]],
+             gg.tib$ggmap[[4]], gg.tib$ggmap[[5]], gg.tib$ggmap[[6]], 
+             nrow = 2)
+ggsave(filename = "graphs/mapas_eda/mapa_cuatri_conj.png",
+       plot = gg, width = 18,height = 10)
 
 
+
+
+# ............................................................................ #
 
 # Frecuencia por país por año
 tab.ggmapy <- tab.motive %>% 
@@ -194,7 +219,7 @@ ggmap_year <- function(tt){
 gg.tib <- tab.ggmapy %>% 
   group_by(year) %>% 
   do(ggmap = ggmap_year(.))
-lapply(1:nrow(gg.tib), function(num){
+sapply(1:nrow(gg.tib), function(num){
   ggsave(filename = paste0("graphs/mapas_eda/mapa_year_", num, ".png"),
          plot = gg.tib$ggmap[[num]], width = 7,height = 6)
   "fin"

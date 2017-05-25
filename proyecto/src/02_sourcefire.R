@@ -156,15 +156,16 @@ ggsave(filename = "graphs/sourcefire/source_ca_country_total.png", width = 7,hei
 
 # ......................................... #
 
-# Asociación de pais por cuatrienio
+# Asociación de pais cada 10 años
 tt <- tab.motive %>% 
-  mutate(country_killed_c = fct_lump(country_killed, n = 15)) %>% 
-  filter(year < 2017) %>% 
-  group_by(source_fire_c, country_killed_c, cuatrienio) %>% 
+  mutate(periodo = cut(year, breaks = c(1992, 2004, 2017), include.lowest = T, dig.lab = 5),
+         country_killed_c = fct_lump(country_killed, n = 15)) %>% 
+  # filter(year < 2017) %>% 
+  group_by(source_fire_c, country_killed_c, periodo) %>% 
   summarise(n = n_distinct(Name))
-
+tt
 tab <- tt %>% 
-  filter(country_killed_c != "Other") %>% 
+  filter(country_killed_c != "Other") %>%
   spread(source_fire_c, n, fill = 0) %>% 
   data.frame()
 apply(tab[, -1:-2], 2, sum)
@@ -177,17 +178,38 @@ ggCA_year <- function(sub){
   ca.fit <- CA(tab.ca, graph = F)
   # summary(ca.fit, nb.dec = 2, ncp = 2)
   ggCA(ca.fit) +
-    ggtitle(paste("Source of Fire\n",
-                  unique(sub$cuatrienio))) +
+    ggtitle(paste("Fuente de Fuego\n",
+                  unique(sub$periodo))) +
     theme(legend.position = "none")
  }
 
 ggca.tib <- tab %>%
-  filter( !(cuatrienio %in% c("[1992,1996]", "(1996,2000]")) ) %>% 
-  group_by(cuatrienio) %>%
+  # filter( !(cuatrienio %in% c("[1992,1996]", "(1996,2000]")) ) %>% 
+  group_by(periodo) %>%
   do(ggca = ggCA_year(.))
-# sapply(1:nrow(ggca.tib), function(num){
-#   ggsave(filename = paste0("graphs/sourcefire/source_ca_cuatri_", num, ".png"),
-#          plot = ggca.tib$ggca[[num]], width = 7,height = 6)
-#   "fin"
-# })
+sapply(1:nrow(ggca.tib), function(num){
+  ggsave(filename = paste0("graphs/sourcefire/source_ca_periodo_", num, ".png"),
+         plot = ggca.tib$ggca[[num]], width = 7,height = 6)
+  "fin"
+})
+
+
+
+
+# ............................................................................ #
+
+# source of fire vs type of death Mexico
+tt <- tab.motive %>% 
+  filter(country_killed == "mexico") %>% 
+  group_by(source_fire_c, impunity) %>% 
+  tally %>% 
+  complete(nesting(source_fire_c), impunity, fill = list(n = 0) ) %>% 
+  spread(impunity, n, fill = 0) %>% 
+  data.frame()
+tt
+row.names(tt) <- tt$source_fire_c
+ca.fit <- CA(tt[, -1], graph = F)
+ggCA(ca.fit, col.size = 4) + 
+  ggtitle("Impunidad asociado a la fuente de fuego\nMéxico") + 
+  theme(legend.position  = "none")
+ggsave("graphs/sourcefire/source_typefire_mex.png", width = 6, height = 5)
