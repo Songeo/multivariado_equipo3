@@ -58,10 +58,38 @@ tab.motive <- tab.mot %>%
                           include.lowest = T)) %>% 
   ungroup %>% 
   mutate(cuatrienio = fct_collapse(cuatrienio, 
-                                    `(2012,2017] ` = c("(2012,2016]", "(2016,2020]")))
+                                    `(2012,2017] ` = c("(2012,2016]", "(2016,2020]"))) %>% 
+  rename(impunity = `Impunity (for Murder)`,
+         type_death = `Type of Death`,
+         source_fire = `Source of Fire`) %>% 
+  mutate(impunity = fct_explicit_na(factor(impunity), "na"),
+         source_fire_c = fct_lump( factor(source_fire), n = 8)) %>% 
+  mutate(impunity = fct_recode(impunity, 
+                               no = 'no',
+                               parcial = 'partial',
+                               sí = 'yes', 
+                               `no info` = 'na'), 
+         source_fire_c = fct_recode(source_fire_c, 
+                                    `grupo criminal` = "criminal group",
+                                    `oficiales gobierno` = "government officials",
+                                    locales = "local residents",
+                                    militares = "military officials",
+                                    `violencia callejera` = "mob violence",
+                                    `grupo paramilitar`  = "paramilitary group",
+                                    `grupo político`  = "political group",
+                                    desconocido  = "unknown fire",
+                                    otro  = "Other"),
+         type_death = fct_recode(type_death, 
+                                 asesinato = "murder",
+                                 `fuego cruzado` = "crossfire/combat-related",
+                                 `misión peligrosa` = "dangerous assignment",
+                                 desconocido = "unknown")) 
+
 tab.motive %>% head
 tab.motive$quinquenio %>% table
 tab.motive$cuatrienio %>% table
+
+tab.motive
 
 cache("tab.motive")
 
@@ -71,6 +99,10 @@ filter(tab.motive, is.na(quinquenio))
 length(tab.motive$Name)
 n_distinct(tab.motive$Name)
 
+tab.motive$impunity %>% levels()
+tab.motive 
+  
+  
 
 
 # ......................................... #

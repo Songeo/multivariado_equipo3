@@ -10,11 +10,6 @@ theme_update(plot.title = element_text(hjust = 0.5))
 load("cache/tab.motive.RData")
 head(tab.motive)
 
-tab.motive <- tab.motive %>% 
-  rename(impunity = `Impunity (for Murder)`,
-         type_death = `Type of Death`,
-         source_fire = `Source of Fire`) %>% 
-  mutate(impunity = fct_explicit_na(factor(impunity), "na"))
 tab.motive %>% head
 tab.motive %>% names
 
@@ -34,8 +29,8 @@ ggCA <- function(ca.fit, var.size = 5, col.size = 3){
   
   ggplot(data = mca1_obs_df, 
          aes(x = Dim.1, y = Dim.2)) + 
-    geom_hline(yintercept = 0, colour = "gray70") + 
-    geom_vline(xintercept = 0, colour = "gray70") + 
+    # geom_hline(yintercept = 0, colour = "gray70") + 
+    # geom_vline(xintercept = 0, colour = "gray70") + 
     geom_point(colour = "gray50", alpha = 0.7) + 
     # geom_density2d(colour = "gray80") +
     geom_text(aes(label = renglon,
@@ -51,7 +46,10 @@ ggCA <- function(ca.fit, var.size = 5, col.size = 3){
               aes(x = Dim.1, y = Dim.2, label = columna, 
                   colour = columna)) +
     scale_color_manual(values = c("gray20", "gray50", 
-                                  brewer.pal(4, "Set2")))
+                                  brewer.pal(4, "Set2"))) + 
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(), 
+          axis.title = element_blank())
 }
 
 
@@ -109,7 +107,7 @@ tt$country_killed_c %>% table
 tab <- tt %>% 
   filter(country_killed_c != "Other") %>% 
   spread(impunity, n, fill = 0) %>% 
-  data.frame()
+  data.frame(check.names = F)
 row.names(tab) <- tab$country_killed_c
 
 ca.fit <- CA(tab[, -1], graph = F)
