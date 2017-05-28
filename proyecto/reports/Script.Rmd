@@ -1,0 +1,62 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+
+Variables utilizadas 
+Tomamos los primeros 20 países y las variables analizadas fueron el tipo de muerte, que puede ser misión peligrosa, fuego cruzado y asesinato. Impunidad que puede ser que si hubo impunidad, impunidad parcial o que no hubo impunidad. 
+
+
+
+
+Tipo de muerte 
+
+Los tipos de muerte que hay son misión peligrosa, fuego cruzado y asesinato. 
+Los países con más muertes asociadas a misión peligrosa son Pakistán e India, los países con más muertes asociadas a asesinatos son México, Brasil, Turquía, Algeria, Filipinas y Colombia y los países con más muertes asociadas a fuego cruzado son Bosnia y Siria. Esto es considerando todo el periodo de tiempo comprendido entre 1992 y marzo de 2017.
+
+En el periodo de 2012 a marzo del 2017, los países con más muertes asociadas a misión peligrosa son Pakistán y Afganistán, muertes por fuego cruzado están más presentes en Yemen, Siria e Israel y muertes por asesinato en México, Filipinas, Brasil, Colombia, Turquía, Rusia, Somalia, India y Bangladesh. 
+
+Impunidad por país. 
+
+De igual forma en el periodo de 1992 a marzo del 2017 se observan los siguientes niveles de impunidad por país:
+Brasil es el país con más muertes asociadas a impunidad parcial
+Impunidad e impunidad parcial ha sido más prevalente en México, Colombia,  Filipinas y Turquía.
+Para Siria, Israel y Yemen no hay información disponible.
+
+En el periodo de 2012 a marzo del 2017
+Los países con menos información al respecto son: Siria, Israel, Afganistán, Ucrania y Libia. Los países con más impunidad son: México, Brasil, Filipinas, India y Turquía.
+
+Fuente de fuego por país.
+Las fuentes de fuego son  militares, grupo paramilitar, grupo político, violencia callejera, locales, grupo criminal, oficiales de gobierno, desconocido y otro
+En el periodo de 1992 a marzo del 2017
+Los países con mayores muertes con fuente de fuego militar fueron Siria y Yemen, el país con más muertes con fuente de fuego de algún grupo político fue Iraq, el país con más muertes asociadas a grupos criminales fue México y los países con más muertes asociadas a oficiales de gobierno son Brasil y Filipinas. 
+
+
+En el periodo de 2004 a marzo de 2017 
+El país con más muertes asociadas a fuego militar es Siria, a fuego paramilitar Sri Lanka, Rusia y Colombia,  los países con muertes cuyas fuentes de fuego son grupos criminales y oficiales de gobierno son  México y Brasil, el país con más muertes a asociadas a oficiales de gobierno es Filipinas, los países con más muertes asociadas a violencia callejera y grupos políticos son Turquía e Iraq y el país con más muertes con fuente de fuego local es Bangladesh.
+
+
+Impunidad vs fuente de fuego
+
+No hay información sobre la impunidad en muertes asociadas a grupos militares, no hay impunidad en muertes asociadas a fuego local.  La impunidad parcial está más asociada a muertes derivadas de oficiales de gobierno, violencia callejera y grupos criminales, y la mayor impunidad está asociada a grupos políticos y violencia callejera. 
+
+
+Impunidad vs fuente de fuego en México
+En México la mayor impunidad está asociada a muertes a manos de grupos criminales, en el caso de muertes por fuentes de fuego locales hay menos impunidad.
+
+Tipo de muerte vs fuente de fuego
+
+Las muertes por fuego cruzado están más asociadas a fuentes de fuego militares, los asesinatos están más asociados a muertes a manos de oficiales de gobierno y a muertes por violencia callejera.Y las muertes en misión peligrosa están más asociadas a fuentes de fuego locales. 
