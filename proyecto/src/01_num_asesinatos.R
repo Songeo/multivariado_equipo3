@@ -124,6 +124,8 @@ tab.motive %>%
                            n_distinct(tab.motive$Name), 
                            "muertes.") ) 
 ggsave("graphs/01_ww_trend.png", width = 7, height = 5)
+ggsave("graphs/01_ww_trend.pdf", width = 7, height = 5)
+
 
 
 tab.motive %>% 
@@ -142,6 +144,7 @@ tab.motive %>%
                            n_distinct(tab.motive$Name), 
                            "muertes.")) 
 ggsave("graphs/01_ww_trend_cuatrienio.png", width = 5, height = 4)
+ggsave("graphs/01_ww_trend_cuatrienio.pdf", width = 5, height = 4)
 
 
 

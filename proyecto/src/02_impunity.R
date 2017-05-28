@@ -117,6 +117,7 @@ ggCA(ca.fit, var.size = 7) +
   ggtitle("Impunidad") + 
   theme(legend.position = "none")
 ggsave(filename = "graphs/impunity/imp_ca_cuatri_total.png", width = 7,height = 6)
+ggsave(filename = "graphs/impunity/imp_ca_cuatri_total.pdf", width = 7,height = 6)
 
 
 
@@ -154,6 +155,8 @@ ggca.tib <- tab %>%
   do(ggca = ggCA_year(.))
 sapply(1:nrow(ggca.tib), function(num){
   ggsave(filename = paste0("graphs/impunity/imp_ca_cuatri_", num, ".png"),
+         plot = ggca.tib$ggca[[num]], width = 7,height = 6)
+  ggsave(filename = paste0("graphs/impunity/imp_ca_cuatri_", num, ".pdf"),
          plot = ggca.tib$ggca[[num]], width = 7,height = 6)
   "fin"
 })

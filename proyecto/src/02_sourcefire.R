@@ -59,7 +59,7 @@ ggCA <- function(ca.fit, var.size = 5, col.size = 3, country = F){
     gg.f <- gg.1 + 
       geom_text(aes(label = renglon),
                 size = col.size,
-                nudge_x = .05, nudge_y = .05, 
+                nudge_x = .0, nudge_y = .0, 
                 color = "gray50",
                 alpha = .7)
   }
@@ -108,6 +108,7 @@ ggCA(ca.fit, col.size = 4) +
   ggtitle("Impunidad asociado a la fuente de fuego") + 
   theme(legend.position  = "none")
 ggsave("graphs/sourcefire/source_impunity_tot.png", width = 6, height = 5)
+ggsave("graphs/sourcefire/source_impunity_tot.pdf", width = 6, height = 5)
 
 
 
@@ -127,7 +128,28 @@ ggCA(ca.fit, col.size = 4) +
   ggtitle("Tipo de muerte asociado a la fuente de fuego") + 
   theme(legend.position  = "none")
 ggsave("graphs/sourcefire/source_typefire_tot.png", width = 6, height = 5)
+ggsave("graphs/sourcefire/source_typefire_tot.pdf", width = 6, height = 5)
  
+
+
+
+# impunidad vs tipo de muerte
+tt <- tab.motive %>% 
+  group_by(impunity, type_death) %>% 
+  tally %>% 
+  complete(nesting(impunity), type_death, fill = list(n = 0) ) %>%
+  spread(type_death, n, fill = 0) %>% 
+  data.frame(check.names = F)
+tt
+row.names(tt) <- tt$impunity
+ca.fit <- CA(tt[, -1], graph = F)
+plot(ca.fit)
+ggCA(ca.fit, col.size = 4) + 
+  ggtitle("Impunidad asociado a tipo de muerte") + 
+  theme(legend.position  = "none")
+ggsave("graphs/impunity/imp_tdeath_tot.png", width = 6, height = 5)
+ggsave("graphs/impunity/imp_tdeath_tot.pdf", width = 6, height = 5)
+
 
 
 # ......................................... #
@@ -151,6 +173,7 @@ ggCA(ca.fit, var.size = 4.5, country = T) +
   ggtitle("Fuente de Fuego por País") + 
   theme(legend.position = "none")
 ggsave(filename = "graphs/sourcefire/source_ca_country_total.png", width = 7,height = 6)
+ggsave(filename = "graphs/sourcefire/source_ca_country_total.pdf", width = 7,height = 6)
 
 
 # ......................................... #
@@ -189,6 +212,8 @@ ggca.tib <- tab %>%
 sapply(1:nrow(ggca.tib), function(num){
   ggsave(filename = paste0("graphs/sourcefire/source_ca_periodo_", num, ".png"),
          plot = ggca.tib$ggca[[num]], width = 7,height = 6)
+  ggsave(filename = paste0("graphs/sourcefire/source_ca_periodo_", num, ".pdf"),
+         plot = ggca.tib$ggca[[num]], width = 7,height = 6)
   "fin"
 })
 
@@ -212,4 +237,5 @@ ggCA(ca.fit, col.size = 4) +
   ggtitle("Impunidad asociado a la fuente de fuego\nMéxico") + 
   theme(legend.position  = "none")
 ggsave("graphs/sourcefire/source_typefire_mex.png", width = 6, height = 5)
+ggsave("graphs/sourcefire/source_typefire_mex.pdf", width = 6, height = 5)
 
