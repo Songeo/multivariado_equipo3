@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Victor M" />
+
+
+<title>Intro paper final</title>
+
+<script src="intro_vic_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="intro_vic_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="intro_vic_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="intro_vic_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="intro_vic_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="intro_vic_files/navigation-1.1/tabsets.js"></script>
+<link href="intro_vic_files/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="intro_vic_files/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Intro paper final</h1>
+<h4 class="author"><em>Victor M</em></h4>
+<h4 class="date"><em>31 de mayo de 2017</em></h4>
+
+</div>
+
+
+<div id="documento-de-apoyo-trabajo-final" class="section level2">
+<h2>Documento de Apoyo trabajo final</h2>
+<div id="introduccion" class="section level3">
+<h3>Introducción</h3>
+<p>A raíz de los conflictos sociales al rededor del mundo se ha observado un incremento en la violencia observada en los últimos años. En particular, enfocaremos el análisis en la amenaza de libertad de expresión y libertad de prensa estudiando un conjunto de datos presentado por el Comité para la Protección de Periodistas (<a href="https://cpj.org/"><em>Committee to Protect Journalist CPJ</em></a> ).</p>
+<p>El conjunto de datos antes mencionado es una recolección de asesinatos de periodistas desde 1992 hasta marzo de 2017 en aproximadamente 105 países. Cada evento o asesinato tiene información sobre el trabajo del periodista y sobre el asesinato.</p>
+<p>Es importante mencionar que CPJ incluye en su definición de periodistas al staff, freelancers o independientes, bloggers, stringers y ciudadanos periodistas que reportan noticias de dominio público sin importar el medio ya sea impreso, fotográfico, de radio, televisión o electrónico.</p>
+<p>A continuación se presenta la lista de variables incluidas en los datos y una breve descripción:</p>
+<ul>
+<li><p><strong>Motive:</strong> variable categórica sobre el motivo del asesinato. Tiene tres niveles: <em>motive confirmed, motive unconfirmed, media workers</em>. La variable <em>media workers</em> registra el asesinato de gente de apoyo clave en el desarrollo de la investigación.</p></li>
+<li><p><strong>Date:</strong> variable numérica de fecha del asesinato. Incluye mes, año y en algunos casos día. Se decide únicamente considerar mes y año.</p></li>
+<li><p><strong>Name:</strong> variable categórica única por periodista excepto cuando no se conoce la identidad de la persona.</p></li>
+<li><p><strong>Sex:</strong> variable binaria del sexo del periodista. Tiene dos niveles: <em>female, male</em>.</p></li>
+<li><p><strong>Country Killed:</strong> variable categórica del país donde ocurrió el asesinato. La variable tiene 105 niveles. Los 30 con mayor número de asesinatos en orden decreciente son: <em>Iraq, Philippines, Syria, Mexico, Pakistan, Colombia, Russia, India, Somalia, Algeria, Brazil, Afghanistan, Bangladesh, Tajikistan, Turkey, Bosnia, Sri Lanka, Honduras, Guatemala, Rwanda, Israel, Yemen, Nigeria, Ukraine, Nepal, Sierra Leone, Peru, Thailand, Democratic Republic Of The Congo, Egypt</em></p></li>
+<li><p><strong>Organization:</strong> variable categórica. Organización para la que el periodista laboraba. La variable tiene 1234 niveles.</p></li>
+<li><p><strong>Nationality:</strong> variable categórica. Nacionalidad de la persona. Se tienen 170 niveles. Los treinta niveles con mayor frecuencia en orden descendente son: <em>Iraq, Syrian, Philippine, Pakistan, Mexican, Algeria, Russia, Colombia, Iraqi, Brazil, India, Somalia, Turkey, Bangladesh, France, Sri Lanka, United States, Honduras, Rwanda, Tajikistan, Nigeria, Afghanistan, United Kingdom, Sierra Leone, Germany, Italy, Peru, Yemen, Egypt, Nepal</em>. Esta variable requiere mayor limpieza, por lo que los niveles pueden disminuir y el ordenamiento cambiar.</p></li>
+<li><p><strong>Medium:</strong> variable categórica. Medios para los que trabajaba la persona. La variable tiene 15 niveles que son las combinaciones de los medios: <em>radio, television, print, internet</em>.</p></li>
+<li><p><strong>Job:</strong> variable categórica. Combinación de empleos que desempeñaba de las diez posibilidades siguientes: <em>internet reporter, print reporter, broadcast, camera operator, editor, photographer, producer, publisher, technician, columnist</em>.</p></li>
+<li><p><strong>Coverage:</strong> variable categórica. Combinación de coberturas de noticias del periodista de los siguientes temas: <em>crime, politics, war, corruption, culture, human rights, business, sports</em>.</p></li>
+<li><p><strong>Freelance:</strong> variable binaria. El periodista laboraba para prensa independiente. Dos niveles: <em>yes, no</em>.</p></li>
+<li><p><strong>Local/Foreign:</strong> variable binaria. Se refiere a la procedencia del periodista. Dos niveles: <em>local, foreign</em>.</p></li>
+<li><p><strong>Source of Fire:</strong> variable categórica. Personas o entidades probablemente responsables del asesinato. Es una combinación de las siguientes opciones: <em>criminal group, government officials, local residents, military officials, mob violence, paramilitary group, political group, unknown fire</em></p></li>
+<li><p><strong>Type of Death:</strong> variable categórica. Clasificación de asesinato de CPJ únicamente para los casos en los que el motivo esté confirmado. Las opciones son <em>crossfire/combat-related, dangerous assignment, murder, unknown</em></p></li>
+<li><p><strong>Impunity (for Murder):</strong> variable categórica. Monitoreo realizado por CPJ sobre el cumplimiento de la ley y el proceso legal para los casos de asesinato confirmado. Tiene tres niveles: <em>yes, no, partial</em>. El nivel <em>partial</em> se refiere a cuando algunos responsables son condenados pero no la totalidad.</p></li>
+<li><p><strong>Taken Captive:</strong> variable binaria. Se refiere al secuestro del periodista en un periodo inmediato previo a la muerte. Dos niveles: <em>yes, no</em>.</p></li>
+<li><p><strong>Threatened:</strong> variable binaria. Se refiere a cualquier amenaza dirigida al periodista cualquier momento antes de ser asesinado. Dos niveles: <em>yes, no</em>.</p></li>
+<li><p><strong>Tortured:</strong> variable binaria. Esto significa que el periodista fue demostrablemente físicamente torturado antes de ser asesinado. Dos niveles: <em>yes, no</em>.</p></li>
+</ul>
+<p>El reto del análisis multivariado para este conjunto de datos fue el gran número de variables categóricas y valores faltantes de las variables. Para disminuir el problema de valores faltantes se decide condicionó el análisis a los asesinatos con motivo confirmado (<em>motive confirmed</em>).</p>
+<p>Considerando el filtro antes mencionado, el conjunto de datos a analizar se compone de un total de 1235 asesinatos al rededor del mundo.</p>
+<p>La técnicas que se usaron para analizar esta base de datos, compuesta principalmente de datos categóricas, fue el <strong>Análisis de Correspondencias</strong>.</p>
+</div>
+<div id="analisis-de-correspondencias" class="section level3">
+<h3>Analisis de Correspondencias</h3>
+<p>El análisis de correspondencia nos permite observar una representación cartográfica de datos categóricos, dadas sus similitudes o disimilitudes. El análisis de correspondencias es un reescalamiento multidemensional a un conjunto de variables categóricas</p>
+<p>El reto del análisis multivariado para este conjunto de datos es el gran número de variables categóricas y datos faltantes que contiene el dataset. Es por eso que una buena propuesta para analizar este conjunto de datos es el de análisis de correspondencias. Sólo se analizaron los datos de los 20 paises con mas asesinatos que tenían el motivo de asesinato confirmado.</p>
+<p>Las variables principales son: Pais, impunidad, fuente de fuego, tipo de muerte.</p>
+<p>El análisis de correspondencia trata de la obtención de perfiles de fila y perfiles de columna, y de maximizar la correlación entre estas escalas.</p>
+<p>Ahora, vayamos <strong>paso a paso</strong> en el algorítmo del método.</p>
+<ul>
+<li>Imagina que tienes dos variables</li>
+<li>1 Color de Pelo</li>
+<li><p>2 Color de Ojos</p></li>
+<li><p>Ahora, haces una tabla de frecuencias entre estas variables</p></li>
+</ul>
+<pre class="r"><code>library(datasets)
+library(knitr)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Brown Eyes</th>
+<th align="right">Blue Eyes</th>
+<th align="right">Hazel Eyes</th>
+<th align="right">Green Eyes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Black Hair</td>
+<td align="right">68</td>
+<td align="right">20</td>
+<td align="right">15</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td>Brown Hair</td>
+<td align="right">119</td>
+<td align="right">84</td>
+<td align="right">54</td>
+<td align="right">29</td>
+</tr>
+<tr class="odd">
+<td>Red Hair</td>
+<td align="right">26</td>
+<td align="right">17</td>
+<td align="right">14</td>
+<td align="right">14</td>
+</tr>
+<tr class="even">
+<td>Blond Hair</td>
+<td align="right">7</td>
+<td align="right">94</td>
+<td align="right">10</td>
+<td align="right">16</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Posterior, se obtienen los perfiles fila y columna, que son las coordenadas de posición de los puntos.</li>
+</ul>
+<p>Ahora definamos, los perfiles fila: Queremos ver que tan cercanas está una fila con otra. La medida de distancia que usamos en este método se llama Ji-Cuadrada y representa la distancia de un renglón con todos los demás. [aqui va el latex parte 1]</p>
+<p>Las distancias se pueden interpretar como una matriz de covarianzas, a la que vamos a descomponer en vectores y valores propios. [aqui va el latex parte 2]</p>
+<p>A esta descomposición se le llama transformación SVD. [aqui va el latex parte 3]</p>
+<p>Los factores están ordenados de manera que mejor explican las varianzas entre filas y tenemos una medida de varianza explicada <span class="math inline">\(\frac{\lambda_i}{\sum{\lambda_i}}\)</span>. Y con esto hacemos el mapa de similitud entre renglones.</p>
+<p>El mismo procedimiento se lleva a cabo para obtener los perfiles columna y hacemos el mapa de similitud entre columnas</p>
+<p>[aqui va el latex parte 4]</p>
+<p>Ahora que tenemos ambos perfiles, juntamos ambos mapas y obtenemos la asociación entre columnas y renglones.</p>
+<p>[latex parte 5]</p>
+<p><strong>Referencias:</strong></p>
+<p>[1] An Introduction to Applied Multivariate Analysis with R, Everit B, Springer 2011.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

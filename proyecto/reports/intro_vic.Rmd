@@ -1,0 +1,192 @@
+---
+title: "Intro paper final"
+author: "Victor M"
+date: "31 de mayo de 2017"
+output: 
+  html_document:
+    self_contained: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Documento de Apoyo trabajo final
+
+###Introducción
+
+A raíz de los conflictos sociales al rededor del mundo se ha observado un 
+incremento en la violencia observada en los últimos años. 
+En particular, enfocaremos el análisis en la amenaza de libertad de 
+expresión y libertad de prensa estudiando un conjunto de datos
+presentado por el Comité para la Protección de Periodistas 
+([*Committee to Protect Journalist CPJ*](https://cpj.org/) ). 
+
+
+El conjunto de datos antes mencionado 
+es una recolección de asesinatos de periodistas desde 
+1992 hasta marzo de 2017 en aproximadamente 105 países. 
+Cada evento o asesinato tiene información 
+sobre el trabajo del periodista y 
+sobre el asesinato. 
+
+
+Es importante mencionar que CPJ incluye en su definición de 
+periodistas al staff, freelancers o independientes, bloggers, stringers y 
+ciudadanos periodistas que reportan noticias de dominio público
+sin importar el medio ya sea impreso, fotográfico, de radio, televisión 
+o electrónico. 
+
+
+A continuación se presenta la lista de 
+variables incluidas en los datos y una 
+breve descripción:
+
+  - **Motive:** variable categórica sobre el
+  motivo del asesinato. Tiene tres niveles: 
+  *motive confirmed, motive unconfirmed, media workers*. 
+  La variable *media workers* registra el asesinato de gente
+  de apoyo clave en el desarrollo de la investigación. 
+  
+  - **Date:** variable numérica de fecha del asesinato. Incluye mes, año y en 
+  algunos casos día. Se decide únicamente considerar mes y año. 
+  
+  - **Name:** variable categórica única por periodista excepto cuando 
+  no se conoce la identidad de la persona. 
+  
+  - **Sex:** variable binaria del sexo del periodista. Tiene dos
+  niveles: *female, male*.
+  
+  - **Country Killed:** variable categórica del país donde ocurrió el 
+  asesinato. La variable tiene 105 niveles. Los 30 con mayor número de asesinatos
+  en orden decreciente son: *Iraq, Philippines, Syria, Mexico, Pakistan, Colombia, Russia, India, Somalia, Algeria, Brazil, Afghanistan, Bangladesh, Tajikistan, Turkey, Bosnia, Sri Lanka, Honduras, Guatemala, Rwanda, Israel, Yemen, Nigeria, Ukraine, Nepal, Sierra Leone, Peru, Thailand, Democratic Republic Of The Congo, Egypt*
+  
+  - **Organization:** variable categórica. Organización 
+  para la que el periodista laboraba. La variable tiene 1234 niveles. 
+  
+  - **Nationality:** variable categórica. Nacionalidad de la persona. 
+  Se tienen 170 niveles. Los treinta niveles con mayor frecuencia en orden
+  descendente son: *Iraq, Syrian, Philippine, Pakistan, Mexican, Algeria, Russia, Colombia, Iraqi, Brazil, India, Somalia, Turkey, Bangladesh, France, Sri Lanka, United States, Honduras, Rwanda, Tajikistan, Nigeria, Afghanistan, United Kingdom, Sierra Leone, Germany, Italy, Peru, Yemen, Egypt, Nepal*. Esta variable requiere mayor limpieza, por lo que los niveles pueden 
+  disminuir y el ordenamiento cambiar. 
+  
+  - **Medium:** variable categórica. Medios para los que trabajaba la persona. 
+  La variable tiene 15 niveles que son las combinaciones de los 
+  medios: *radio, television, print, internet*.
+  
+  - **Job:** variable categórica. Combinación de empleos que desempeñaba de 
+  las diez posibilidades siguientes: *internet reporter, print reporter, broadcast, camera operator, editor, photographer, producer, publisher, technician, columnist*.
+  
+  - **Coverage:** variable categórica. Combinación de coberturas de noticias del
+  periodista de los siguientes temas: *crime, politics, war, corruption, culture, human rights, business, sports*.
+  
+  - **Freelance:** variable binaria. El periodista laboraba para prensa independiente.
+  Dos niveles: *yes, no*.
+  
+  - **Local/Foreign:** variable binaria. Se refiere a la procedencia del periodista.
+  Dos niveles: *local, foreign*.
+  
+  - **Source of Fire:** variable categórica. Personas o entidades probablemente responsables
+  del asesinato. Es una combinación de las siguientes opciones: *criminal group, government officials, local residents, military officials, mob violence, paramilitary group, political group, unknown fire*
+  
+  - **Type of Death:** variable categórica. Clasificación de asesinato de CPJ
+  únicamente para los casos en los que el motivo esté confirmado.
+  Las opciones son *crossfire/combat-related, dangerous assignment, murder, unknown*
+  
+  - **Impunity (for Murder):** variable categórica. Monitoreo realizado por 
+  CPJ sobre el cumplimiento de la ley y el proceso legal para 
+  los casos de asesinato confirmado. Tiene tres niveles: *yes, no, partial*. 
+  El nivel *partial* se refiere a cuando algunos responsables 
+  son condenados pero no la totalidad.
+  
+  - **Taken Captive:** variable binaria. Se refiere al secuestro del 
+  periodista en un periodo inmediato previo a la muerte. 
+  Dos niveles: *yes, no*.
+  
+  - **Threatened:** variable binaria. Se refiere a cualquier amenaza
+  dirigida al periodista cualquier momento antes de ser asesinado. 
+  Dos niveles: *yes, no*.
+  
+  - **Tortured:** variable binaria. Esto significa que el periodista 
+  fue demostrablemente físicamente torturado antes de ser asesinado.
+  Dos niveles: *yes, no*.
+
+
+
+El reto del análisis multivariado para este conjunto de datos fue
+el gran número de variables categóricas y 
+valores faltantes de las variables. Para 
+disminuir el problema de valores faltantes
+se decide condicionó el análisis a los asesinatos 
+con motivo confirmado (*motive confirmed*). 
+
+Considerando el filtro antes mencionado, el conjunto de datos a analizar se compone de un total de 1235 asesinatos al rededor del mundo.
+
+La técnicas que se usaron para analizar esta base de datos, compuesta principalmente de datos categóricas, fue el **Análisis de Correspondencias**.
+
+###Analisis de Correspondencias
+
+El análisis de correspondencia nos permite observar una representación cartográfica de datos categóricos, dadas sus similitudes o disimilitudes. El análisis de correspondencias es un reescalamiento multidemensional a un conjunto de variables categóricas
+
+El reto del análisis multivariado para este conjunto de datos es el gran número de variables categóricas y datos faltantes que contiene el dataset. Es por eso que una buena propuesta para analizar este conjunto de datos es el de análisis de correspondencias.
+Sólo se analizaron los datos de los 20 paises con mas asesinatos que tenían el motivo de asesinato confirmado.
+
+Las variables principales son: Pais, impunidad, fuente de fuego, tipo de muerte.
+
+El análisis de correspondencia trata de la obtención de perfiles de fila y perfiles de columna, y de maximizar la correlación entre estas escalas.
+
+Ahora, vayamos **paso a paso** en el algorítmo del método.
+
++ Imagina que tienes dos variables 
+  + 1 Color de Pelo
+  + 2 Color de Ojos
+
+
+
+
+
++ Ahora, haces una tabla de frecuencias entre estas variables
+
+
+```{r, results ='hide'}
+library(datasets)
+library(knitr)
+```
+
+```{r, echo=F, eval=T}
+data("HairEyeColor")
+tbl <- apply(HairEyeColor, c(1,2), sum)
+dimnames(tbl) <- list(paste(dimnames(tbl)[[1]], "Hair"),
+                      paste(dimnames(tbl)[[2]], "Eyes"))
+kable(tbl)
+```
+
++ Posterior, se obtienen los perfiles fila y columna, que son las coordenadas de posición de los puntos.
+
+Ahora definamos, los perfiles fila:
+Queremos ver que tan cercanas está una fila con otra. La medida de distancia que usamos en este método se llama Ji-Cuadrada y representa la distancia de un renglón con todos los demás.
+[aqui va el latex parte 1]
+
+Las distancias se pueden interpretar como una matriz de covarianzas, a la que vamos a descomponer en vectores y valores propios.
+[aqui va el latex parte 2]
+
+
+A esta descomposición se le llama transformación SVD.
+[aqui va el latex parte 3]
+	
+
+
+Los factores están ordenados de manera que mejor explican las varianzas entre filas y tenemos una medida de varianza explicada $\frac{\lambda_i}{\sum{\lambda_i}}$.
+Y con esto hacemos el mapa de similitud entre renglones.
+
+El mismo procedimiento se lleva a cabo para obtener los perfiles columna y hacemos el mapa de similitud entre columnas
+
+[aqui va el latex parte 4]
+
+
+Ahora que tenemos ambos perfiles, juntamos ambos mapas y obtenemos la asociación entre columnas y renglones.
+
+[latex parte 5]
+
+**Referencias:**
+
+[1] An Introduction to Applied Multivariate Analysis with R, Everit B, Springer 2011.
